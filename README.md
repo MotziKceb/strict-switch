@@ -28,7 +28,7 @@ The Trackers page (from the popup or settings) lists every tracking company Stri
 
 | Rule | Effect |
 | --- | --- |
-| **Block** | Its trackers are blocked everywhere, even on Balanced sites and even if you visit the company. |
+| **Block** | Its trackers are blocked everywhere, including on the company's own sites and on Balanced sites, even if you visit the company. |
 | **Auto** (default) | Blocked, but allowed on Balanced sites if you visit the company regularly. |
 | **Allow** | Its trackers load on every site, including Strict ones. |
 

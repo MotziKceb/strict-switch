@@ -1,4 +1,4 @@
-import { CATEGORIES, LEVELS, getEngaged, getSettings, reasonFor } from '../lib/core.js';
+import { CATEGORIES, LEVELS, dynamicRuleKind, getEngaged, getSettings, reasonFor } from '../lib/core.js';
 import { clearLog, getLog } from '../lib/activity.js';
 
 const $ = (id) => document.getElementById(id);
@@ -96,10 +96,9 @@ async function buildReport() {
     chrome.declarativeNetRequest.getDynamicRules(),
   ]);
   const entries = filtered({ withEvents: true }).slice(-MAX_REPORT);
-  const ranges = [[4e4, 'own-site'], [3e4, 'block'], [2e4, 'allow'], [1e4, 'balanced'], [0, 'basic']];
   const ruleCounts = {};
   for (const { id } of dynamic) {
-    const kind = ranges.find(([base]) => id >= base)[1];
+    const kind = dynamicRuleKind(id) ?? 'other';
     ruleCounts[kind] = (ruleCounts[kind] ?? 0) + 1;
   }
   const query = $('search').value.trim();
