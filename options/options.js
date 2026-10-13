@@ -1,5 +1,5 @@
 import { isEdge, showBrowserText } from '../lib/browser.js';
-import { CATEGORIES, LEVELS, getEngaged, getSettings, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
@@ -40,12 +40,14 @@ function render() {
     }),
   );
 
-  const sites = Object.entries(settings.siteLevels);
+  // Sites with a level other than Strict, or with exceptions.
+  const sites = [...new Set([...Object.keys(settings.siteLevels), ...Object.keys(settings.siteAllows)])].sort();
   $('sites').replaceChildren(
-    ...sites.map(([site, level]) => {
+    ...sites.map((site) => {
+      const level = settings.siteLevels[site] ?? 'strict';
       const select = document.createElement('select');
       select.setAttribute('aria-label', `Level for ${site}`);
-      for (const value of ['balanced', 'basic']) {
+      for (const value of ['lockdown', 'strict', 'balanced', 'basic']) {
         select.append(new Option(LEVELS[value].label, value, false, value === level));
       }
       select.addEventListener('change', async () => {
@@ -57,6 +59,7 @@ function render() {
         className: 'remove',
         textContent: 'Strict',
         title: `Set ${site} back to Strict`,
+        disabled: level === 'strict',
       });
       remove.addEventListener('click', async () => {
         settings = await setSiteLevel(site, 'strict');
@@ -64,8 +67,46 @@ function render() {
       });
       const actions = Object.assign(document.createElement('div'), { className: 'site-actions' });
       actions.append(select, remove);
+
+      const name = Object.assign(document.createElement('div'), { className: 'site-name' });
+      name.append(site);
+      const exceptions = settings.siteAllows[site] ?? [];
+      if (exceptions.length) {
+        const line = Object.assign(document.createElement('span'), {
+          className: 'exceptions',
+          textContent: `Allowed here: ${exceptions.map((p) => {
+            const [company, category] = p.split(':');
+            return `${company} ${CATEGORIES.find((c) => c.id === category)?.label ?? category}`;
+          }).join(', ')}`,
+        });
+        const clear = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Remove' });
+        clear.addEventListener('click', async () => {
+          settings = await clearSiteAllows(site);
+          render();
+        });
+        line.append(clear);
+        name.append(line);
+      }
       const li = document.createElement('li');
-      li.append(site, actions);
+      li.append(name, actions);
+      return li;
+    }),
+  );
+
+  $('balanced-categories').replaceChildren(
+    ...CATEGORIES.map((c) => {
+      const input = Object.assign(document.createElement('input'), {
+        type: 'checkbox',
+        checked: settings.balancedCategories.includes(c.id),
+      });
+      input.addEventListener('change', async () => {
+        settings = await setBalancedCategory(c.id, input.checked);
+        render();
+      });
+      const label = Object.assign(document.createElement('label'), { className: 'switch' });
+      label.append(input, c.label);
+      const li = document.createElement('li');
+      li.append(label);
       return li;
     }),
   );

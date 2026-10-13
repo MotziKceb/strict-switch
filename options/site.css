@@ -1,0 +1,21 @@
+.site-list {
+  margin-top: 12px;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.site-list:empty { display: none; }
+
+.site-list .break-row { padding: 8px 0; }
+.site-list .break-detail { font-size: 12px; }
+
+.label-likely { color: var(--danger); }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notice { color: var(--strict); }

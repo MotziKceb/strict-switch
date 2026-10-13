@@ -90,6 +90,16 @@ function logSettingsChanges(changes) {
   for (const [id, on] of diff('categories')) {
     logEvent(`Category ${CATEGORIES.find((c) => c.id === id)?.label ?? id} turned ${on ? 'on' : 'off'}`);
   }
+  for (const [site, pairs] of diff('siteAllows')) {
+    const before = changes.siteAllows.oldValue?.[site] ?? [];
+    const after = pairs ?? [];
+    const label = (p) => p.replace(':', ' ');
+    for (const p of after.filter((x) => !before.includes(x))) logEvent(`Allowed ${label(p)} on ${site}`);
+    for (const p of before.filter((x) => !after.includes(x))) logEvent(`Blocked ${label(p)} on ${site} again`);
+  }
+  if (changes.balancedCategories) {
+    logEvent(`Balanced now opens: ${changes.balancedCategories.newValue.join(', ') || 'nothing'}`);
+  }
   if (changes.blockOwnSites) {
     logEvent(`Blocking on owners' own sites turned ${changes.blockOwnSites.newValue ? 'on' : 'off'}`);
   }

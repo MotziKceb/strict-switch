@@ -1,9 +1,11 @@
 import { isEdge, showBrowserText } from '../lib/browser.js';
-import { CATEGORIES, LEVELS, describeRule, getEngaged, groupOf, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { breakageList, breakageRow, categoryLabel, pageGroups } from '../lib/breakage.js';
+import { LEVELS, getEngaged, getSettings, setEnabled, setSiteAllow, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const levelButtons = document.querySelectorAll('.levels button');
 const MAX_COMPANIES = 6;
+const MAX_BREAKAGE = 4;
 
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 let url = null;
@@ -31,10 +33,17 @@ function render() {
   const current = siteLevel(url.hostname, settings.siteLevels);
   // A level set on a parent domain is changed on that domain.
   const inherited = current.site && current.site !== site;
+  // Lockdown shows on the Strict button, which reached it.
+  const lockdown = current.level === 'lockdown';
+  const shown = lockdown ? 'strict' : current.level;
   for (const button of levelButtons) {
-    button.setAttribute('aria-checked', String(button.dataset.level === current.level));
+    button.setAttribute('aria-checked', String(button.dataset.level === shown));
     button.disabled = !settings.enabled || inherited;
   }
+  const strict = document.querySelector('[data-level="strict"]');
+  strict.classList.toggle('lockdown', lockdown);
+  $('strict-label').textContent = lockdown ? 'Lockdown' : 'Strict';
+  $('strict-sub').textContent = lockdown ? 'Every tracker' : 'All trackers';
 
   let note = '';
   if (!settings.enabled) {
@@ -43,12 +52,17 @@ function render() {
       : 'The Strict layer is off everywhere. No trackers are being blocked.';
   } else if (inherited) {
     note = `Set to ${LEVELS[current.level].label} through ${current.site}. Change it in Settings.`;
+  } else if (lockdown) {
+    note = 'Every known tracker is blocked on this site, including content and the owner\'s own trackers. Click Strict to go back.';
   } else if (current.level === 'balanced') {
-    note = `Trackers from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly are allowed, unless you've blocked them. All others are blocked.`;
+    const opened = settings.balancedCategories.map(categoryLabel).join(' and ') || 'nothing';
+    note = `Opens ${opened} from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly. Everything else stays blocked.`;
   } else if (current.level === 'basic') {
     note = isEdge
       ? 'Only Edge\'s own tracking prevention is active on this site.'
       : 'No trackers are blocked on this site.';
+  } else {
+    note = 'Ctrl+click Strict to block every known tracker on this site.';
   }
   $('note').textContent = note;
   $('note').hidden = !note;
@@ -56,54 +70,62 @@ function render() {
   $('status').textContent = settings.enabled ? `${LEVELS[current.level].label} on this site` : 'Strict layer off';
 }
 
-function openPage(file, query) {
-  chrome.tabs.create({ url: chrome.runtime.getURL(file) + (query ? `?q=${encodeURIComponent(query)}` : '') });
+function openPage(file, params = {}) {
+  const query = new URLSearchParams(params).toString();
+  chrome.tabs.create({ url: chrome.runtime.getURL(file) + (query ? `?${query}` : '') });
   window.close();
 }
 
-const openTrackers = (query) => openPage('options/trackers.html', query);
+const openTrackers = (q) => openPage('options/trackers.html', q ? { q } : {});
 
 const GROUPS = [
   { id: 'blocked', title: 'Blocked' },
   { id: 'allowed', title: 'Allowed' },
   { id: 'off', title: 'Not blocked, category off' },
 ];
-const categoryLabel = (id) => CATEGORIES.find((c) => c.id === id)?.label ?? id;
 
-// What happened on this page, split into blocked trackers, allowed trackers
-// and requests in categories that are switched off.
+async function toggleAllow(entry, allowed) {
+  settings = await setSiteAllow(site, entry.company, entry.category, allowed);
+  $('reload').hidden = false;
+}
+
+// What happened on this page: a summary, the blocked groups most likely to
+// break it (with per-site toggles), then everything by group and company.
 async function renderPage() {
-  let rules = [];
-  try {
-    ({ rulesMatchedInfo: rules } = await chrome.declarativeNetRequest.getMatchedRules({ tabId: tab.id }));
-  } catch {
-    // Rate limited, or no access to this tab.
-  }
-  // group -> company -> { count, categories }
-  const groups = Object.fromEntries(GROUPS.map((g) => [g.id, new Map()]));
-  for (const { rule } of rules) {
-    const match = await describeRule(rule);
-    if (!match?.company) continue;
-    const companies = groups[groupOf(match, settings.categories)];
-    const entry = companies.get(match.company) ?? { count: 0, categories: new Set() };
-    entry.count++;
-    if (match.category) entry.categories.add(match.category);
-    companies.set(match.company, entry);
-  }
+  const groups = await pageGroups(tab.id, site, settings);
 
-  const totals = Object.fromEntries(GROUPS.map((g) => [g.id, [...groups[g.id].values()].reduce((n, e) => n + e.count, 0)]));
+  const total = (id) => groups.filter((g) => g.group === id).reduce((n, g) => n + g.count, 0);
+  const totals = { blocked: total('blocked'), allowed: total('allowed'), off: total('off') };
   $('n-blocked').textContent = totals.blocked;
   $('l-blocked').textContent = totals.blocked === 1 ? 'tracker blocked' : 'trackers blocked';
   $('n-allowed').textContent = totals.allowed;
   $('l-allowed').textContent = totals.allowed === 1 ? 'tracker allowed' : 'trackers allowed';
   $('n-off').textContent = totals.off;
-  const offCategories = new Set([...groups.off.values()].flatMap((e) => [...e.categories]));
+  const offCategories = new Set(groups.filter((g) => g.group === 'off').map((g) => g.category));
   $('l-off').textContent = offCategories.size === 1 && offCategories.has('content')
     ? 'content requests (videos, images, fonts), not blocked'
     : 'not blocked, category off';
 
-  $('groups').replaceChildren(...GROUPS.filter((g) => groups[g.id].size).map((g) => {
-    const sorted = [...groups[g.id]].sort(([, a], [, b]) => b.count - a.count);
+  const breakage = breakageList(groups);
+  $('breakage').hidden = !breakage.length;
+  $('break-list').replaceChildren(...breakage.slice(0, MAX_BREAKAGE).map((e) => breakageRow(e, toggleAllow)));
+  const more = breakage.length - MAX_BREAKAGE;
+  $('break-more').hidden = more <= 0;
+  $('break-more').textContent = `and ${more} more`;
+
+  // The company lists below skip what the breakage list already shows.
+  const inBreakage = new Set(breakage.map((e) => e));
+  $('groups').replaceChildren(...GROUPS.map((g) => {
+    const companies = new Map();
+    for (const entry of groups) {
+      if (entry.group !== g.id || inBreakage.has(entry) || !entry.count) continue;
+      const c = companies.get(entry.company) ?? { count: 0, categories: new Set() };
+      c.count += entry.count;
+      c.categories.add(entry.category);
+      companies.set(entry.company, c);
+    }
+    if (!companies.size) return null;
+    const sorted = [...companies].sort(([, a], [, b]) => b.count - a.count);
     const items = sorted.slice(0, MAX_COMPANIES).map(([name, { count, categories }]) => {
       const label = document.createElement('span');
       label.className = 'name';
@@ -127,12 +149,14 @@ async function renderPage() {
     list.append(...items);
     section.append(Object.assign(document.createElement('h3'), { textContent: g.title }), list);
     return section;
-  }));
+  }).filter(Boolean));
 }
 
 for (const button of levelButtons) {
-  button.addEventListener('click', async () => {
-    const level = button.dataset.level;
+  button.addEventListener('click', async (e) => {
+    let level = button.dataset.level;
+    // Ctrl+click (Cmd+click on a Mac) on Strict is Lockdown.
+    if (level === 'strict' && (e.ctrlKey || e.metaKey)) level = 'lockdown';
     if (level === siteLevel(url.hostname, settings.siteLevels).level) return;
     settings = await setSiteLevel(site, level);
     render();
@@ -142,13 +166,20 @@ for (const button of levelButtons) {
   });
 }
 
+$('break-more').addEventListener('click', () => openPage('options/site.html', { site, tab: tab.id }));
+
+$('reload').addEventListener('click', async () => {
+  await chrome.tabs.reload(tab.id);
+  window.close();
+});
+
 $('enabled').addEventListener('change', async (e) => {
   settings = await setEnabled(e.target.checked);
   render();
 });
 
 $('open-trackers').addEventListener('click', () => openTrackers());
-$('open-log').addEventListener('click', () => openPage('options/log.html', site));
+$('open-log').addEventListener('click', () => openPage('options/log.html', { q: site }));
 
 $('open-options').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();

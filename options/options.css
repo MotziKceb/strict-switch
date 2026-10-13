@@ -170,3 +170,29 @@ details summary {
 }
 
 .categories.off { opacity: 0.5; }
+
+h3 {
+  margin: 20px 0 4px;
+  font-size: 14px;
+}
+
+.site-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-name .exceptions {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.site-name .exceptions button {
+  margin-left: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+#balanced-categories li { padding: 8px 14px; }

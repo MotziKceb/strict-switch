@@ -10,13 +10,18 @@ Edge's own exceptions list turns tracking prevention fully *off* for a site, and
 
 | Level | What's blocked on the site |
 | --- | --- |
+| **Lockdown** (Ctrl+click Strict) | Every known tracker: all categories including Tracking content, on the owner's own sites too, overriding company Allow rules. |
 | **Strict** (default) | Every tracker in the categories you've enabled. |
-| **Balanced** | The same, except trackers from companies you visit regularly. |
+| **Balanced** | The same, except Social and Tracking content from companies you visit regularly (configurable). Ads, analytics and the rest stay blocked. |
 | **Basic** | Nothing extra. Only Edge's own Basic protection. |
+
+### Might break the page
+
+The popup lists the blocked trackers most likely to break the current page: Tracking content (videos, images, fonts, page code) and trackers on their owner's own site first, then Social (logins, comments, embedded posts). Each is grouped by company and category with a toggle that allows it **on that site only**; flip what you need and click **Reload page to apply**. The popup shows the top four; **and N more** opens a page with the full list in the same order. Per-site exceptions are listed, and can be removed, in settings.
 
 ### About Balanced
 
-Edge's Balanced mode allows trackers from companies you've "engaged" with, so things like embedded posts, logins and videos from sites you use keep working. Strict Switch does the same: a company counts as one you visit regularly once you've visited its sites at least 3 times in the last 30 days. The settings page lists those companies.
+Edge's Balanced mode allows trackers from companies you've "engaged" with, so things like embedded posts, logins and videos from sites you use keep working. Strict Switch does the same, but by default only for Social and Tracking content (the categories that break sites); ads, analytics, fingerprinting and cryptomining stay blocked. You can change which categories Balanced opens in settings. A company counts as one you visit regularly once you've visited its sites at least 3 times in the last 30 days. The settings page lists those companies.
 
 Extensions can't read Edge's own engagement scores, so this is counted from your browsing history, which is why the extension asks for the history permission. It only reads it, on your device, and nothing is sent anywhere.
 

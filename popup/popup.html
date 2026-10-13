@@ -14,9 +14,9 @@
 
   <main id="controls" hidden>
     <div class="levels" role="radiogroup" aria-label="Tracking prevention for this site">
-      <button type="button" role="radio" data-level="strict">
-        <strong>Strict</strong>
-        <span>All trackers</span>
+      <button type="button" role="radio" data-level="strict" title="Ctrl+click for Lockdown: block every known tracker on this site">
+        <strong id="strict-label">Strict</strong>
+        <span id="strict-sub">All trackers</span>
       </button>
       <button type="button" role="radio" data-level="balanced">
         <strong>Balanced</strong>
@@ -36,6 +36,13 @@
         <li class="allowed" title="Trackers that got through, for example because the company owns this site or you allowed it"><span class="dot"></span><strong id="n-allowed">0</strong> <span id="l-allowed">trackers allowed</span></li>
         <li class="off" title="Requests to tracking companies in categories you've switched off. With the default settings that's content like videos, images and fonts, which sites usually need."><span class="dot"></span><strong id="n-off">0</strong> <span id="l-off">not blocked, category off</span></li>
       </ul>
+      <div class="breakage" id="breakage" hidden>
+        <h3>Might break the page</h3>
+        <p class="break-intro">Blocked here and likely needed by the page. Switch one on to allow it on this site only.</p>
+        <ul class="break-list" id="break-list"></ul>
+        <button type="button" class="link more-link" id="break-more" hidden></button>
+        <button type="button" class="button reload" id="reload" hidden>Reload page to apply</button>
+      </div>
       <div id="groups"></div>
     </section>
   </main>
