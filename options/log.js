@@ -95,7 +95,20 @@ async function buildReport() {
     chrome.declarativeNetRequest.getEnabledRulesets(),
     chrome.declarativeNetRequest.getDynamicRules(),
   ]);
-  const entries = filtered({ withEvents: true }).slice(-MAX_REPORT);
+  const matching = filtered({ withEvents: true });
+  // Unless the category-off group is what's being reported, summarize it per
+  // site and domain: it's mostly a site's own content with unique file names.
+  const summarizeOff = filter !== 'off';
+  const entries = matching.filter((e) => !(summarizeOff && e.kind !== 'event' && groupOf(e) === 'off')).slice(-MAX_REPORT);
+  const offSummary = new Map();
+  if (summarizeOff) {
+    for (const e of matching) {
+      if (e.kind === 'event' || groupOf(e) !== 'off') continue;
+      const host = e.url?.split('/')[0] ?? '-';
+      const key = [e.site ?? '-', e.company ?? '-', categoryLabels[e.category] ?? '-', host].join(' | ');
+      offSummary.set(key, (offSummary.get(key) ?? 0) + (e.count ?? 1));
+    }
+  }
   const ruleCounts = {};
   for (const { id } of dynamic) {
     const kind = dynamicRuleKind(id) ?? 'other';
@@ -125,12 +138,23 @@ async function buildReport() {
     '',
     '## Log',
     '',
+    ...(summarizeOff ? ['Trackers and settings changes. Requests not blocked because their category is off are summarized below.', ''] : []),
     '```',
     ...entries.map((e) => e.kind === 'event'
       ? `${time(e.time)}  ** ${e.text}`
       : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${categoryLabels[e.category] ?? '-'} | ${e.url ?? '-'} ${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${GROUP_LABELS[groupOf(e)].toUpperCase()}: ${reasonFor(e, groupOf(e))}`),
     '```',
   ];
+  if (offSummary.size) {
+    lines.push(
+      '',
+      '## Not blocked, category off (summary)',
+      '',
+      '```',
+      ...[...offSummary].sort(([, a], [, b]) => b - a).map(([key, n]) => `${key} | ${n} ${n === 1 ? 'request' : 'requests'}`),
+      '```',
+    );
+  }
   return lines.join('\n') + '\n';
 }
 
