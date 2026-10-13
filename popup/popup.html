@@ -30,7 +30,7 @@
     <p class="note muted" id="note" hidden></p>
 
     <section class="blocked">
-      <div><span id="blocked-count">0</span> <span id="blocked-label">requests blocked on this page</span></div>
+      <div><span id="blocked-count">0</span> <span id="blocked-label">trackers blocked on this page</span></div>
       <ul id="blocked-list"></ul>
     </section>
   </main>
@@ -42,7 +42,10 @@
       <input type="checkbox" id="enabled">
       <span>Strict layer on</span>
     </label>
-    <button type="button" class="link" id="open-options">Settings</button>
+    <span class="links">
+      <button type="button" class="link" id="open-trackers">Trackers</button>
+      <button type="button" class="link" id="open-options">Settings</button>
+    </span>
   </footer>
 
   <script type="module" src="popup.js"></script>

@@ -77,10 +77,33 @@ main {
   padding: 0;
 }
 
-.blocked li {
+.blocked li button {
   display: flex;
+  width: 100%;
   justify-content: space-between;
-  padding: 2px 0;
+  gap: 8px;
+  padding: 3px 4px;
+  margin: 0 -4px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  text-align: left;
+}
+
+.blocked li button:hover { background: var(--surface); }
+
+.blocked li .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blocked li .count { flex: none; }
+.blocked li .count.is-blocked { color: var(--danger); }
+.blocked li .count.is-allowed { color: var(--strict); }
+
+.blocked .more {
+  padding: 3px 0;
   color: var(--muted);
 }
 
@@ -95,6 +118,11 @@ footer {
   align-items: center;
   padding: 10px 16px;
   border-top: 1px solid var(--border);
+}
+
+.links {
+  display: flex;
+  gap: 14px;
 }
 
 .link {

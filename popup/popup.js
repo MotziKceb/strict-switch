@@ -1,7 +1,8 @@
-import { CATEGORIES, LEVELS, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { LEVELS, companyForRule, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const levelButtons = document.querySelectorAll('.levels button');
+const MAX_COMPANIES = 6;
 
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 let url = null;
@@ -40,7 +41,7 @@ function render() {
   } else if (inherited) {
     note = `Set to ${LEVELS[current.level].label} through ${current.site}. Change it in Settings.`;
   } else if (current.level === 'balanced') {
-    note = `Trackers from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly are allowed. All others are blocked.`;
+    note = `Trackers from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly are allowed, unless you've blocked them. All others are blocked.`;
   } else if (current.level === 'basic') {
     note = 'Only Edge\'s own tracking prevention is active on this site.';
   }
@@ -50,6 +51,13 @@ function render() {
   $('status').textContent = settings.enabled ? `${LEVELS[current.level].label} on this site` : 'Strict layer off';
 }
 
+function openTrackers(query) {
+  const page = chrome.runtime.getURL('options/trackers.html') + (query ? `?q=${encodeURIComponent(query)}` : '');
+  chrome.tabs.create({ url: page });
+  window.close();
+}
+
+// Tracker companies caught on this page, with blocked and allowed counts.
 async function renderBlocked() {
   let rules = [];
   try {
@@ -57,21 +65,38 @@ async function renderBlocked() {
   } catch {
     // Rate limited, or no access to this tab.
   }
-  const counts = new Map();
+  const companies = new Map();
   for (const { rule } of rules) {
-    if (rule.rulesetId === '_dynamic') continue;
-    counts.set(rule.rulesetId, (counts.get(rule.rulesetId) ?? 0) + 1);
+    const match = await companyForRule(rule);
+    if (!match) continue;
+    const entry = companies.get(match.company) ?? { blocked: 0, allowed: 0 };
+    entry[match.allowed ? 'allowed' : 'blocked']++;
+    companies.set(match.company, entry);
   }
-  const total = [...counts.values()].reduce((a, b) => a + b, 0);
+  const total = [...companies.values()].reduce((sum, c) => sum + c.blocked, 0);
   $('blocked-count').textContent = total;
-  $('blocked-label').textContent = `${total === 1 ? 'request' : 'requests'} blocked on this page`;
-  $('blocked-list').replaceChildren(
-    ...CATEGORIES.filter((c) => counts.has(c.id)).map((c) => {
-      const li = document.createElement('li');
-      li.append(c.label, Object.assign(document.createElement('span'), { textContent: counts.get(c.id) }));
-      return li;
-    }),
-  );
+  $('blocked-label').textContent = `${total === 1 ? 'tracker' : 'trackers'} blocked on this page`;
+
+  const sorted = [...companies].sort(([, a], [, b]) => b.blocked + b.allowed - (a.blocked + a.allowed));
+  const items = sorted.slice(0, MAX_COMPANIES).map(([name, { blocked, allowed }]) => {
+    const count = Object.assign(document.createElement('span'), {
+      className: `count ${blocked ? 'is-blocked' : 'is-allowed'}`,
+      textContent: [blocked && `${blocked} blocked`, allowed && `${allowed} allowed`].filter(Boolean).join(', '),
+    });
+    const button = Object.assign(document.createElement('button'), { type: 'button', title: `Manage ${name} on the Trackers page` });
+    button.append(Object.assign(document.createElement('span'), { className: 'name', textContent: name }), count);
+    button.addEventListener('click', () => openTrackers(name));
+    const li = document.createElement('li');
+    li.append(button);
+    return li;
+  });
+  if (sorted.length > MAX_COMPANIES) {
+    items.push(Object.assign(document.createElement('li'), {
+      className: 'more',
+      textContent: `and ${sorted.length - MAX_COMPANIES} more`,
+    }));
+  }
+  $('blocked-list').replaceChildren(...items);
 }
 
 for (const button of levelButtons) {
@@ -90,6 +115,8 @@ $('enabled').addEventListener('change', async (e) => {
   settings = await setEnabled(e.target.checked);
   render();
 });
+
+$('open-trackers').addEventListener('click', () => openTrackers());
 
 $('open-options').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();

@@ -68,9 +68,15 @@ for (const [name, { properties = [], resources = [] }] of Object.entries(entitie
   entityDomains.set(name, owned);
 }
 
-// Companies (or lone domains) with trackers in any category, and the domains
-// they own. Used by the Balanced level to allow companies you visit regularly.
+// Companies with trackers, keyed by name: the domains they own, their tracker
+// domains and the categories those are in. A tracker domain without a known
+// owner counts as its own company. Used by the Balanced level and the
+// Trackers page.
 const trackerEntities = {};
+
+// For each category, the company behind each rule (rule id - 1), so matched
+// rules can be traced back to a company.
+const ruleIndex = {};
 
 const meta = { source: 'Disconnect tracking protection list', generated: new Date().toISOString(), categories: {} };
 
@@ -86,7 +92,7 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
           for (const d of domains) {
             const domain = cleanDomain(d);
             if (!domain) continue;
-            const entity = lookup(entityOf, domain) ?? '';
+            const entity = lookup(entityOf, domain) ?? domain;
             if (!groups.has(entity)) groups.set(entity, new Set());
             groups.get(entity).add(domain);
           }
@@ -102,13 +108,16 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
       requestDomains: [...domains].sort(),
       domainType: 'thirdParty',
     };
-    const owned = entity ? [...(entityDomains.get(entity) ?? [])].sort() : [];
-    if (owned.length) condition.excludedInitiatorDomains = owned;
+    const owned = [...(entityDomains.get(entity) ?? [entity])].sort();
+    condition.excludedInitiatorDomains = owned;
     rules.push({ id: rules.length + 1, priority: 1, action: { type: 'block' }, condition });
-    if (entity) trackerEntities[entity] = owned;
-    else for (const domain of domains) trackerEntities[domain] = [domain];
+    trackerEntities[entity] ??= { owned, trackers: new Set(), categories: [] };
+    for (const domain of domains) trackerEntities[entity].trackers.add(domain);
+    trackerEntities[entity].categories.push(id);
     domainCount += domains.size;
   }
+
+  ruleIndex[id] = [...groups.keys()].sort((a, b) => a.localeCompare(b));
 
   // One rule per line keeps the files compact and the diffs readable.
   await writeFile(path.join(OUT_DIR, `${id}.json`), '[\n' + rules.map((r) => JSON.stringify(r)).join(',\n') + '\n]\n');
@@ -116,11 +125,14 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
   console.log(`${id}: ${domainCount} domains in ${rules.length} rules`);
 }
 
-const sortedEntities = Object.fromEntries(Object.entries(trackerEntities).sort(([a], [b]) => a.localeCompare(b)));
+const sortedEntities = Object.entries(trackerEntities)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([name, e]) => [name, { ...e, trackers: [...e.trackers].sort() }]);
 await writeFile(
   path.join(OUT_DIR, 'entities.json'),
-  '{\n' + Object.entries(sortedEntities).map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`).join(',\n') + '\n}\n',
+  '{\n' + sortedEntities.map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`).join(',\n') + '\n}\n',
 );
-console.log(`entities: ${Object.keys(sortedEntities).length}`);
+await writeFile(path.join(OUT_DIR, 'rule-index.json'), JSON.stringify(ruleIndex) + '\n');
+console.log(`companies: ${sortedEntities.length}`);
 
 await writeFile(path.join(OUT_DIR, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');

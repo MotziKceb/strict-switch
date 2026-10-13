@@ -22,6 +22,18 @@ Extensions can't read Edge's own engagement scores, so this is counted from your
 
 It isn't an exact copy of Edge's Balanced. Edge's version doesn't block ad and social trackers from loading (it only blocks their cookies and storage) and doesn't touch analytics at all. Strict Switch's Balanced blocks all of them unless you visit the company, so it's stricter. Since almost everyone visits Google and Microsoft sites, their trackers will usually be allowed on Balanced sites, just like in Edge.
 
+### Trackers page
+
+The Trackers page (from the popup or settings) lists every tracking company Strict Switch has caught on the sites you visit: how many requests were blocked or allowed, when, and on which sites. Each company has a clear status and a three-way switch:
+
+| Rule | Effect |
+| --- | --- |
+| **Block** | Its trackers are blocked everywhere, even on Balanced sites and even if you visit the company. |
+| **Auto** (default) | Blocked, but allowed on Balanced sites if you visit the company regularly. |
+| **Allow** | Its trackers load on every site, including Strict ones. |
+
+Search by company name or tracker domain, filter to blocked or allowed companies, or include companies that haven't been caught yet to block them in advance. Sites on Basic always allow everything. Clicking a company in the popup opens it on the Trackers page.
+
 ## Install
 
 1. Download `strict-switch-*.zip` from the [latest release](../../releases/latest) and extract it to a folder you'll keep. Edge loads the extension from that folder, so don't delete it.
@@ -30,10 +42,15 @@ It isn't an exact copy of Edge's Balanced. Edge's version doesn't block ad and s
 4. The settings page opens. Click **Open Edge privacy settings** and set tracking prevention to **Basic**.
 5. Optional: pin the extension to the toolbar from the puzzle-piece menu.
 
+To update, extract a newer release over the same folder and click the reload button on the extension's card in `edge://extensions`. Your settings and stepped-down sites are kept.
+
+Edge only allows installing extensions outside the Add-ons store through Developer mode, which is why there's no one-click install file.
+
 ## Use
 
 - **Toolbar badge:** the number of requests blocked on the current tab.
 - **Popup:** shows the current site's level (Strict, Balanced or Basic), with a one-click switch and a breakdown of what was blocked. The "Strict layer on" switch pauses blocking everywhere.
+- **Popup:** also lists the tracking companies caught on the current page.
 - **Settings:** choose which tracker categories to block, view, add or change stepped-down sites, and see which companies Balanced currently allows. You can paste a full URL; it's trimmed to the domain.
 
 Your stepped-down sites and settings are stored with `chrome.storage.sync`, so they follow your Edge profile if sync is on.
@@ -55,12 +72,9 @@ Like Edge, trackers aren't blocked on sites owned by the same company (for examp
 
 - `rules/*.json` are static [declarativeNetRequest](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest) rulesets, one per category, generated from the Disconnect list.
 - Basic sites are covered by a dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
-- Balanced sites are covered by a dynamic `allow` rule for the domains owned by companies you visit regularly (`rules/entities.json`, built from Disconnect's company list). The background worker recounts visits hourly and whenever you visit a tracker company's site.
-- Permissions: `declarativeNetRequest` to block, `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the hourly recount. The extension can't read page contents.
-
-To update, extract a newer release over the same folder and click the reload button on the extension's card in `edge://extensions`. Your settings and stepped-down sites are kept.
-
-Edge only allows installing extensions outside the Add-ons store through Developer mode, which is why there's no one-click install file.
+- Each company gets its own dynamic rules: an `allow` rule limited to Balanced sites if you visit it regularly, or an `allow` or `block` rule everywhere if you've set it to Allow or Block. Companies and their domains come from `rules/entities.json`, built from Disconnect's company list. The background worker recounts visits hourly and whenever you visit a tracker company's site.
+- Caught trackers are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.
+- Permissions: `declarativeNetRequest` to block, `declarativeNetRequestFeedback` to see which rules matched (for the Trackers page and popup), `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the periodic recount. The extension can't read page contents.
 
 ## Releasing
 

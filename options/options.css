@@ -36,6 +36,8 @@ section {
 }
 
 .button {
+  display: inline-block;
+  text-decoration: none;
   padding: 6px 14px;
   border: none;
   border-radius: 6px;
