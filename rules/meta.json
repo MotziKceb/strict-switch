@@ -1,0 +1,30 @@
+{
+  "source": "Disconnect tracking protection list",
+  "generated": "2026-10-13T20:24:24.873Z",
+  "categories": {
+    "advertising": {
+      "domains": 2740,
+      "rules": 1273
+    },
+    "analytics": {
+      "domains": 526,
+      "rules": 357
+    },
+    "social": {
+      "domains": 52,
+      "rules": 16
+    },
+    "fingerprinting": {
+      "domains": 551,
+      "rules": 371
+    },
+    "cryptomining": {
+      "domains": 33,
+      "rules": 14
+    },
+    "content": {
+      "domains": 393,
+      "rules": 115
+    }
+  }
+}

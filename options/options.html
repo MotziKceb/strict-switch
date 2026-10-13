@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strict Switch settings</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>Strict Switch</h1>
+    <p class="muted">Strict-level tracker blocking on top of Edge's own tracking prevention. Step any site down to Basic from the toolbar button.</p>
+
+    <section class="callout">
+      <h2>Set Edge to Basic</h2>
+      <p>This extension provides the Strict layer, so set Edge's own tracking prevention to <strong>Basic</strong>. Every site then keeps Edge's Basic protection, even the ones you step down.</p>
+      <button type="button" class="button" id="open-edge-settings">Open Edge privacy settings</button>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Strict layer</h2>
+        <label class="switch">
+          <input type="checkbox" id="enabled">
+          <span>On</span>
+        </label>
+      </div>
+      <p class="muted">Tracker categories to block on every site that isn't stepped down.</p>
+      <ul class="categories" id="categories"></ul>
+      <p class="muted small" id="list-info"></p>
+    </section>
+
+    <section>
+      <h2>Sites on Basic</h2>
+      <p class="muted">These sites only get Edge's own Basic protection. Subdomains are included.</p>
+      <form id="add-form">
+        <input type="text" id="add-input" placeholder="example.com" aria-label="Site to set to Basic" autocomplete="off" spellcheck="false">
+        <button type="submit" class="button">Add</button>
+      </form>
+      <p class="error" id="add-error" hidden></p>
+      <ul class="sites" id="sites"></ul>
+      <p class="muted" id="sites-empty">No sites yet. Every site gets the Strict layer.</p>
+    </section>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

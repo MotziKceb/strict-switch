@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Strict Switch</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="site" id="site">-</div>
+    <div class="muted" id="status"></div>
+  </header>
+
+  <main id="controls" hidden>
+    <div class="levels" role="radiogroup" aria-label="Tracking prevention for this site">
+      <button type="button" role="radio" data-level="strict">
+        <strong>Strict</strong>
+        <span>Block trackers</span>
+      </button>
+      <button type="button" role="radio" data-level="basic">
+        <strong>Basic</strong>
+        <span>Edge only</span>
+      </button>
+    </div>
+    <p class="note muted" id="note" hidden></p>
+
+    <section class="blocked">
+      <div><span id="blocked-count">0</span> <span id="blocked-label">requests blocked on this page</span></div>
+      <ul id="blocked-list"></ul>
+    </section>
+  </main>
+
+  <p class="unavailable muted" id="unavailable" hidden>Strict Switch doesn't work on this page.</p>
+
+  <footer>
+    <label class="switch">
+      <input type="checkbox" id="enabled">
+      <span>Strict layer on</span>
+    </label>
+    <button type="button" class="link" id="open-options">Settings</button>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
