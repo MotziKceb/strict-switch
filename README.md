@@ -76,7 +76,7 @@ Your stepped-down sites and settings are stored with `chrome.storage.sync`, so t
 | Cryptomining | On | |
 | Tracking content | Off | Embedded videos, maps and fonts from tracking companies. Breaks many sites. |
 
-Like Edge, trackers aren't blocked on sites owned by the same company (for example `facebook.net` on `facebook.com`, or Google's ad trackers on YouTube), and visiting a tracker's own site directly still works. To block them there too, turn on **Block trackers on their owners' own sites too** in settings. It's off by default because it's stricter than Edge and can break sites like Facebook; put those on Basic if it does.
+Unlike Edge, Strict also blocks a company's trackers on its own sites, such as Google's ad trackers on YouTube; Edge exempts those. This can break parts of a company's own sites, such as Outlook or OneDrive (Microsoft) or Instagram (Meta): set those sites to Balanced to open them up, or turn off **Block trackers on their owners' own sites too** in settings to exempt every company's own sites like Edge does. Visiting a tracker company's site directly always works.
 
 ## How it works
 
