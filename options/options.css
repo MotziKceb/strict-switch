@@ -9,6 +9,12 @@ h1 {
   font-size: 22px;
 }
 
+.version {
+  font-size: 13px;
+  font-weight: normal;
+  margin-left: 6px;
+}
+
 h2 {
   margin: 0 0 4px;
   font-size: 15px;

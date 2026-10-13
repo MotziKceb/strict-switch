@@ -52,7 +52,8 @@ function render() {
       const remove = Object.assign(document.createElement('button'), {
         type: 'button',
         className: 'remove',
-        textContent: 'Back to Strict',
+        textContent: 'Strict',
+        title: `Set ${site} back to Strict`,
       });
       remove.addEventListener('click', async () => {
         settings = await setSiteLevel(site, 'strict');
@@ -138,6 +139,8 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   render();
   renderEngaged();
 });
+
+$('version').textContent = `Version ${chrome.runtime.getManifest().version}`;
 
 const generated = new Date(meta.generated).toLocaleDateString(undefined, { dateStyle: 'medium' });
 $('list-info').textContent = `Blocklist: ${meta.source}, built ${generated}.`;
