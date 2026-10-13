@@ -49,7 +49,7 @@ Edge only allows installing extensions outside the Add-ons store through Develop
 
 ## Releasing
 
-Bump `version` in `manifest.json`, commit, then push a matching tag (for example `git tag v0.1.1 && git push origin v0.1.1`). The Release workflow packages the extension and publishes it.
+Bump `version` in `manifest.json` and merge to `main`. The Release workflow packages the extension and publishes a release for any version that hasn't been released yet.
 
 ## Updating the blocklist
 

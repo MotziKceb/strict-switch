@@ -1,10 +1,12 @@
 name: Release
 
-# Push a tag like v0.1.0 (matching the version in manifest.json) to publish a
-# release with the packaged extension attached.
+# Publishes a release with the packaged extension whenever main has a
+# manifest.json version that hasn't been released yet. To release, bump
+# "version" in manifest.json and merge to main.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,14 +17,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check the tag matches manifest.json
-        run: test "v$(jq -r .version manifest.json)" = "$GITHUB_REF_NAME"
+      - name: Check for an unreleased version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(jq -r .version manifest.json)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "$tag is already released."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Package
-        run: zip -r "strict-switch-$GITHUB_REF_NAME.zip" manifest.json background.js lib popup options ui rules icons LICENSE
+        if: steps.version.outputs.new == 'true'
+        run: zip -r "strict-switch-${{ steps.version.outputs.tag }}.zip" manifest.json background.js lib popup options ui rules icons LICENSE
 
       - name: Publish
+        if: steps.version.outputs.new == 'true'
         env:
+          TAG: ${{ steps.version.outputs.tag }}
           GH_TOKEN: ${{ github.token }}
         run: |
           cat > notes.md <<'NOTES'
@@ -35,4 +51,4 @@ jobs:
 
           To update, extract the new zip over the same folder and click the reload button on the extension's card in `edge://extensions`.
           NOTES
-          gh release create "$GITHUB_REF_NAME" strict-switch-*.zip --title "Strict Switch $GITHUB_REF_NAME" --notes-file notes.md
+          gh release create "$TAG" strict-switch-*.zip --target "$GITHUB_SHA" --title "Strict Switch $TAG" --notes-file notes.md
