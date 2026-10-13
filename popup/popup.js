@@ -1,5 +1,5 @@
 import { isEdge, showBrowserText } from '../lib/browser.js';
-import { LEVELS, describeRule, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { CATEGORIES, LEVELS, describeRule, getEngaged, groupOf, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const levelButtons = document.querySelectorAll('.levels button');
@@ -63,48 +63,71 @@ function openPage(file, query) {
 
 const openTrackers = (query) => openPage('options/trackers.html', query);
 
-// Tracker companies caught on this page, with blocked and allowed counts.
-async function renderBlocked() {
+const GROUPS = [
+  { id: 'blocked', title: 'Blocked' },
+  { id: 'allowed', title: 'Allowed' },
+  { id: 'off', title: 'Not blocked, category off' },
+];
+const categoryLabel = (id) => CATEGORIES.find((c) => c.id === id)?.label ?? id;
+
+// What happened on this page, split into blocked trackers, allowed trackers
+// and requests in categories that are switched off.
+async function renderPage() {
   let rules = [];
   try {
     ({ rulesMatchedInfo: rules } = await chrome.declarativeNetRequest.getMatchedRules({ tabId: tab.id }));
   } catch {
     // Rate limited, or no access to this tab.
   }
-  const companies = new Map();
+  // group -> company -> { count, categories }
+  const groups = Object.fromEntries(GROUPS.map((g) => [g.id, new Map()]));
   for (const { rule } of rules) {
     const match = await describeRule(rule);
     if (!match?.company) continue;
-    const entry = companies.get(match.company) ?? { blocked: 0, allowed: 0 };
-    entry[match.allowed ? 'allowed' : 'blocked']++;
+    const companies = groups[groupOf(match, settings.categories)];
+    const entry = companies.get(match.company) ?? { count: 0, categories: new Set() };
+    entry.count++;
+    if (match.category) entry.categories.add(match.category);
     companies.set(match.company, entry);
   }
-  const total = [...companies.values()].reduce((sum, c) => sum + c.blocked, 0);
-  const allowed = [...companies.values()].reduce((sum, c) => sum + c.allowed, 0);
-  $('blocked-count').textContent = total;
-  $('blocked-label').textContent = `${total === 1 ? 'tracker' : 'trackers'} blocked on this page`
-    + (allowed ? `, ${allowed} allowed` : '');
 
-  const sorted = [...companies].sort(([, a], [, b]) => b.blocked + b.allowed - (a.blocked + a.allowed));
-  const items = sorted.slice(0, MAX_COMPANIES).map(([name, { blocked, allowed }]) => {
-    const count = Object.assign(document.createElement('span'), {
-      className: `count ${blocked ? 'is-blocked' : 'is-allowed'}`,
-      textContent: [blocked && `${blocked} blocked`, allowed && `${allowed} allowed`].filter(Boolean).join(', '),
+  const totals = Object.fromEntries(GROUPS.map((g) => [g.id, [...groups[g.id].values()].reduce((n, e) => n + e.count, 0)]));
+  $('n-blocked').textContent = totals.blocked;
+  $('l-blocked').textContent = totals.blocked === 1 ? 'tracker blocked' : 'trackers blocked';
+  $('n-allowed').textContent = totals.allowed;
+  $('l-allowed').textContent = totals.allowed === 1 ? 'tracker allowed' : 'trackers allowed';
+  $('n-off').textContent = totals.off;
+  const offCategories = new Set([...groups.off.values()].flatMap((e) => [...e.categories]));
+  $('l-off').textContent = offCategories.size === 1 && offCategories.has('content')
+    ? 'content requests (videos, images, fonts), not blocked'
+    : 'not blocked, category off';
+
+  $('groups').replaceChildren(...GROUPS.filter((g) => groups[g.id].size).map((g) => {
+    const sorted = [...groups[g.id]].sort(([, a], [, b]) => b.count - a.count);
+    const items = sorted.slice(0, MAX_COMPANIES).map(([name, { count, categories }]) => {
+      const label = document.createElement('span');
+      label.className = 'name';
+      label.append(name, ' ', Object.assign(document.createElement('span'), {
+        className: 'cats',
+        textContent: [...categories].map(categoryLabel).join(', '),
+      }));
+      const button = Object.assign(document.createElement('button'), { type: 'button', title: `Manage ${name} on the Trackers page` });
+      button.append(label, Object.assign(document.createElement('span'), { className: 'count', textContent: count }));
+      button.addEventListener('click', () => openTrackers(name));
+      const li = document.createElement('li');
+      li.append(button);
+      return li;
     });
-    const button = Object.assign(document.createElement('button'), { type: 'button', title: `Manage ${name} on the Trackers page` });
-    button.append(Object.assign(document.createElement('span'), { className: 'name', textContent: name }), count);
-    button.addEventListener('click', () => openTrackers(name));
-    const li = document.createElement('li');
-    li.append(button);
-    return li;
-  });
-  if (sorted.length > MAX_COMPANIES) {
-    items.push(Object.assign(document.createElement('li'), {
-      className: 'more',
-      textContent: `and ${sorted.length - MAX_COMPANIES} more`,
-    }));
-  }
-  $('blocked-list').replaceChildren(...items);
+    if (sorted.length > MAX_COMPANIES) {
+      items.push(Object.assign(document.createElement('li'), { className: 'more', textContent: `and ${sorted.length - MAX_COMPANIES} more` }));
+    }
+    const section = document.createElement('div');
+    section.className = `group ${g.id}`;
+    const list = document.createElement('ul');
+    list.append(...items);
+    section.append(Object.assign(document.createElement('h3'), { textContent: g.title }), list);
+    return section;
+  }));
 }
 
 for (const button of levelButtons) {
@@ -134,4 +157,4 @@ $('open-options').addEventListener('click', () => {
 
 showBrowserText();
 render();
-if (site) renderBlocked();
+if (site) renderPage();

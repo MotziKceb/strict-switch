@@ -1,4 +1,4 @@
-import { CATEGORIES, LEVELS, getEngaged, getSettings } from '../lib/core.js';
+import { CATEGORIES, LEVELS, getEngaged, getSettings, reasonFor } from '../lib/core.js';
 import { clearLog, getLog } from '../lib/activity.js';
 
 const $ = (id) => document.getElementById(id);
@@ -7,33 +7,30 @@ const MAX_SHOWN = 1000;
 const MAX_REPORT = 500;
 
 let log = await getLog();
-let filter = 'all';
+let filter = 'trackers';
 $('search').value = new URLSearchParams(location.search).get('q') ?? '';
 
-function why(entry) {
-  switch (entry.kind) {
-    case 'strict': return `Strict layer (${categoryLabels[entry.category] ?? entry.category})`;
-    case 'own-site': return 'Owner\'s own site, blocked by your setting';
-    case 'same-company': return 'Same company as the site';
-    case 'category-off': return `${categoryLabels[entry.category] ?? entry.category} is switched off`;
-    case 'balanced': return 'Balanced site, you visit this company';
-    case 'allow': return 'Your rule: Allow';
-    case 'block': return 'Your rule: Block';
-    case 'basic': return 'Basic site, everything allowed';
-    default: return '';
-  }
-}
+// Entries from before 0.5.1 have no group.
+const groupOf = (e) => e.group ?? (e.allowed ? 'allowed' : 'blocked');
+const GROUP_LABELS = { blocked: 'Blocked', allowed: 'Allowed', off: 'Category off' };
 
 const time = (t) => new Date(t).toLocaleTimeString(undefined, { hour12: false });
 
-function filtered() {
+function matchesQuery(e, query) {
+  return !query || [e.site, e.company, e.url, e.text].some((v) => v?.toLowerCase().includes(query));
+}
+
+function filtered({ withEvents = false } = {}) {
   const query = $('search').value.trim().toLowerCase();
   return log.filter((e) => {
-    if (filter === 'event' && e.kind !== 'event') return false;
-    if (filter === 'blocked' && (e.kind === 'event' || e.allowed)) return false;
-    if (filter === 'allowed' && (e.kind === 'event' || !e.allowed)) return false;
-    if (!query) return true;
-    return [e.site, e.company, e.url, e.text].some((v) => v?.toLowerCase().includes(query));
+    // Reports keep settings changes for context, whatever the filter.
+    // Changes also show among trackers, to explain why a tracker flips.
+    if (e.kind === 'event') return withEvents || (['event', 'trackers', 'all'].includes(filter) && matchesQuery(e, query));
+    if (filter === 'event') return false;
+    const group = groupOf(e);
+    if (filter === 'trackers' && group === 'off') return false;
+    if (['blocked', 'allowed', 'off'].includes(filter) && group !== filter) return false;
+    return matchesQuery(e, query);
   });
 }
 
@@ -49,7 +46,7 @@ function row(e) {
   if (e.kind === 'event') {
     tr.className = 'event';
     const text = cell('col-text', e.text);
-    text.colSpan = 4;
+    text.colSpan = 5;
     tr.append(cell('col-time', time(e.time)), text);
     return tr;
   }
@@ -57,16 +54,16 @@ function row(e) {
   const request = e.url
     ? [e.url, ' ', Object.assign(document.createElement('span'), { className: 'type', textContent: e.type ?? '' }), ...repeats]
     : [Object.assign(document.createElement('span'), { className: 'type', textContent: e.kind === 'basic' ? 'page' : 'details not available' })];
-  const status = Object.assign(document.createElement('span'), {
-    className: `status ${e.allowed ? 'allowed' : 'blocked'}`,
-    textContent: e.allowed ? 'Allowed' : 'Blocked',
-  });
+  const group = groupOf(e);
+  tr.className = group;
+  const status = Object.assign(document.createElement('span'), { className: `status ${group}`, textContent: GROUP_LABELS[group] });
   tr.append(
     cell('col-time', time(e.time)),
     cell('col-site', e.site ?? ''),
     cell('col-company', e.company ?? ''),
+    cell('col-category', categoryLabels[e.category] ?? ''),
     cell('col-request', ...request),
-    cell('col-result', status, Object.assign(document.createElement('span'), { className: 'why', textContent: why(e) })),
+    cell('col-result', status, Object.assign(document.createElement('span'), { className: 'why', textContent: reasonFor(e, groupOf(e)) })),
   );
   return tr;
 }
@@ -82,6 +79,15 @@ function render() {
   $('empty').textContent = log.length ? 'No entries match.' : 'Nothing logged yet. Browse a site and entries will appear here.';
 }
 
+// Request counts per group for the search, whatever the group filter.
+function summary(query) {
+  const totals = { blocked: 0, allowed: 0, off: 0 };
+  for (const e of log) {
+    if (e.kind !== 'event' && matchesQuery(e, query.toLowerCase())) totals[groupOf(e)] += e.count ?? 1;
+  }
+  return `${totals.blocked} blocked, ${totals.allowed} allowed, ${totals.off} category off`;
+}
+
 async function buildReport() {
   const [settings, engaged, rulesets, dynamic] = await Promise.all([
     getSettings(),
@@ -89,7 +95,7 @@ async function buildReport() {
     chrome.declarativeNetRequest.getEnabledRulesets(),
     chrome.declarativeNetRequest.getDynamicRules(),
   ]);
-  const entries = filtered().slice(-MAX_REPORT);
+  const entries = filtered({ withEvents: true }).slice(-MAX_REPORT);
   const ranges = [[4e4, 'own-site'], [3e4, 'block'], [2e4, 'allow'], [1e4, 'balanced'], [0, 'basic']];
   const ruleCounts = {};
   for (const { id } of dynamic) {
@@ -105,6 +111,7 @@ async function buildReport() {
     `- Browser: ${navigator.userAgent}`,
     `- Created: ${new Date().toString()}`,
     `- Filter: ${filter}${query ? `, "${query}"` : ''} (${entries.length} entries)`,
+    `- Totals for this search: ${summary(query)}`,
     '',
     '## Settings',
     '',
@@ -122,7 +129,7 @@ async function buildReport() {
     '```',
     ...entries.map((e) => e.kind === 'event'
       ? `${time(e.time)}  ** ${e.text}`
-      : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${e.url ?? '-'} ${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${e.allowed ? 'ALLOWED' : 'BLOCKED'}: ${why(e)}`),
+      : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${categoryLabels[e.category] ?? '-'} | ${e.url ?? '-'} ${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${GROUP_LABELS[groupOf(e)].toUpperCase()}: ${reasonFor(e, groupOf(e))}`),
     '```',
   ];
   return lines.join('\n') + '\n';

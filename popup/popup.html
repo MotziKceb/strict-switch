@@ -30,9 +30,13 @@
     </div>
     <p class="note muted" id="note" hidden></p>
 
-    <section class="blocked">
-      <div><span id="blocked-count">0</span> <span id="blocked-label">trackers blocked on this page</span></div>
-      <ul id="blocked-list"></ul>
+    <section class="page">
+      <ul class="summary">
+        <li class="blocked" title="Trackers stopped on this page"><span class="dot"></span><strong id="n-blocked">0</strong> <span id="l-blocked">trackers blocked</span></li>
+        <li class="allowed" title="Trackers that got through, for example because the company owns this site or you allowed it"><span class="dot"></span><strong id="n-allowed">0</strong> <span id="l-allowed">trackers allowed</span></li>
+        <li class="off" title="Requests to tracking companies in categories you've switched off. With the default settings that's content like videos, images and fonts, which sites usually need."><span class="dot"></span><strong id="n-off">0</strong> <span id="l-off">not blocked, category off</span></li>
+      </ul>
+      <div id="groups"></div>
     </section>
   </main>
 

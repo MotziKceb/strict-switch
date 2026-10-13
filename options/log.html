@@ -13,15 +13,17 @@
   <main>
     <nav class="crumbs"><a class="back" href="options.html">Settings</a><a href="trackers.html">Trackers</a></nav>
     <h1>Activity log</h1>
-    <p class="muted">Every tracker Strict Switch saw, blocked or allowed, and why, plus your settings changes. Repeats of the same request are folded into one line with a count. The log keeps the last 3,000 entries and is cleared when the browser closes. Addresses are shown without their query strings.</p>
+    <p class="muted">Every request to a tracking company Strict Switch saw, and what happened to it. <strong class="t-blocked">Blocked</strong> and <strong class="t-allowed">allowed</strong> are real trackers. <strong>Category off</strong> is everything in a category you've switched off; with the default settings that's content like videos, images and fonts, which sites usually need. Repeats are folded into one line with a count. The log keeps the last 3,000 entries, is cleared when the browser closes, and shows addresses without their query strings.</p>
 
     <div class="toolbar">
       <input type="search" id="search" placeholder="Filter by site, company or address" aria-label="Filter by site, company or address" autocomplete="off" spellcheck="false">
       <div class="filter" role="radiogroup" aria-label="Show">
-        <button type="button" role="radio" data-filter="all" aria-checked="true">All</button>
+        <button type="button" role="radio" data-filter="trackers" aria-checked="true" title="Blocked and allowed trackers">Trackers</button>
         <button type="button" role="radio" data-filter="blocked" aria-checked="false">Blocked</button>
         <button type="button" role="radio" data-filter="allowed" aria-checked="false">Allowed</button>
+        <button type="button" role="radio" data-filter="off" aria-checked="false">Category off</button>
         <button type="button" role="radio" data-filter="event" aria-checked="false">Changes</button>
+        <button type="button" role="radio" data-filter="all" aria-checked="false">Everything</button>
       </div>
     </div>
     <div class="toolbar secondary">
@@ -32,13 +34,13 @@
         <button type="button" class="remove" id="clear">Clear log</button>
       </span>
     </div>
-    <p class="muted small" id="report-note">Reports include your settings and the entries matching the current filter (up to the newest 500). They list sites you've visited, so check before sharing.</p>
+    <p class="muted small" id="report-note">Reports include your settings and the entries matching the current filter (up to the newest 500), plus your settings changes. They list sites you've visited, so check before sharing.</p>
     <p class="notice" id="copied" hidden></p>
 
     <div class="log-wrap">
       <table class="log">
         <thead>
-          <tr><th>Time</th><th>Site</th><th>Company</th><th>Request</th><th>Result</th></tr>
+          <tr><th>Time</th><th>Site</th><th>Company</th><th>Category</th><th>Request</th><th>Result</th></tr>
         </thead>
         <tbody id="entries"></tbody>
       </table>

@@ -36,7 +36,7 @@ Company rules only cover the categories you have switched on in Settings, so blo
 
 ### Activity log
 
-The activity log (from the popup, the Trackers page or settings) lists every tracker request Strict Switch saw, blocked or allowed, with the site, company, address and the reason, such as "Strict layer (Advertising)", "Balanced site, you visit this company", "Your rule: Block", "Same company as the site" or "Tracking content is switched off". Permitted trackers are logged too, so nothing is hidden, and repeats of the same request are folded into one line with a count. Settings changes are logged too. Filter by site, company or address, then **Copy report** or **Download report** to get a text report with your settings and the matching entries, handy for bug reports.
+The activity log (from the popup, the Trackers page or settings) lists every tracker request Strict Switch saw, blocked or allowed, with the site, company, address and the reason, such as "Strict layer (Advertising)", "Balanced site, you visit this company", "Your rule: Block", "Same company as the site" or "Tracking content is switched off". Permitted trackers are logged too, so nothing is hidden, and repeats of the same request are folded into one line with a count. Settings changes are logged too. Each entry has its category and falls in one of the same three groups as the popup; the log shows real trackers (blocked and allowed) by default, with filters for blocked, allowed, category off, settings changes or everything. Filter by site, company or address, then **Copy report** or **Download report** to get a text report with your settings and the matching entries, handy for bug reports.
 
 The log keeps the last 3,000 entries, is cleared when Edge closes, and stores addresses without query strings. It's most detailed when the extension is loaded unpacked; otherwise Edge only reports which rule matched, not the address.
 
@@ -60,7 +60,7 @@ Edge only allows installing extensions outside the Add-ons store through Develop
 
 - **Toolbar badge:** the number of requests blocked on the current tab.
 - **Popup:** shows the current site's level (Strict, Balanced or Basic), with a one-click switch and a breakdown of what was blocked. The "Blocking" switch pauses the extension everywhere. The Log link opens the activity log filtered to the current site.
-- **Popup:** also lists the tracking companies caught on the current page.
+- **Popup:** also sums up the current page in three plain groups: **trackers blocked**, **trackers allowed** (and the companies behind them), and requests **not blocked because their category is off**. With the default settings that last group is content like videos, images and fonts from tracking companies, such as YouTube's own video and thumbnails. Every company is listed with its category.
 - **Settings:** choose which tracker categories to block, view, add or change stepped-down sites, and see which companies Balanced currently allows. You can paste a full URL; it's trimmed to the domain.
 
 Your stepped-down sites and settings are stored with `chrome.storage.sync`, so they follow your Edge profile if sync is on.

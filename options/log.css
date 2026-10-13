@@ -52,6 +52,12 @@ main {
 .log .col-result .why { display: block; color: var(--muted); font-weight: normal; }
 
 .log tr.event td { color: var(--accent); font-style: italic; }
+.log tr.off td { color: var(--muted); }
+.log td.col-category { white-space: nowrap; }
+.log .status.off { color: var(--muted); }
+
+.t-blocked { color: var(--danger); }
+.t-allowed { color: var(--strict); }
 
 .log td.col-request .repeat {
   margin-left: 4px;

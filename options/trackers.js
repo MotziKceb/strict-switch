@@ -42,6 +42,7 @@ function row(name, entity) {
     const parts = [];
     if (caught.blocked) parts.push(`${caught.blocked} blocked`);
     if (caught.allowed) parts.push(`${caught.allowed} allowed`);
+    if (caught.off) parts.push(`${caught.off} not blocked (category off)`);
     details = `Total ${parts.join(', ')}, last ${timeAgo(caught.last)}`;
     if (caught.sites.length) details += ` on ${caught.sites.slice(0, 3).join(', ')}`;
     if (caught.sites.length > 3) details += ` and ${caught.sites.length - 3} more`;

@@ -133,19 +133,20 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
 
 const sortedEntities = Object.entries(trackerEntities).sort(([a], [b]) => a.localeCompare(b));
 
-// The observe ruleset: for each company, an allow rule for its trackers on its
-// own sites, and one per category for when that category is switched off.
+// The observe ruleset: for each company and category, an allow rule for its
+// trackers on its own sites, and one for when that category is switched off.
 const observeRules = [];
 const observeIndex = [];
 for (const [name, { owned, trackers }] of sortedEntities) {
-  const all = [...new Set(Object.values(trackers).flat())].sort();
-  observeRules.push({
-    id: observeRules.length + 1,
-    priority: SAME_COMPANY_PRIORITY,
-    action: { type: 'allow' },
-    condition: { requestDomains: all, domainType: 'thirdParty', initiatorDomains: owned },
-  });
-  observeIndex.push([name, 'same-company', null]);
+  for (const [category, domains] of Object.entries(trackers)) {
+    observeRules.push({
+      id: observeRules.length + 1,
+      priority: SAME_COMPANY_PRIORITY,
+      action: { type: 'allow' },
+      condition: { requestDomains: domains, domainType: 'thirdParty', initiatorDomains: owned },
+    });
+    observeIndex.push([name, 'same-company', category]);
+  }
   for (const [category, domains] of Object.entries(trackers)) {
     observeRules.push({
       id: observeRules.length + 1,
