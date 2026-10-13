@@ -1,0 +1,38 @@
+name: Release
+
+# Push a tag like v0.1.0 (matching the version in manifest.json) to publish a
+# release with the packaged extension attached.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches manifest.json
+        run: test "v$(jq -r .version manifest.json)" = "$GITHUB_REF_NAME"
+
+      - name: Package
+        run: zip -r "strict-switch-$GITHUB_REF_NAME.zip" manifest.json background.js lib popup options ui rules icons LICENSE
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'NOTES'
+          ## Install
+
+          1. Download `strict-switch-*.zip` below and extract it to a folder you'll keep (Edge loads the extension from that folder).
+          2. Open `edge://extensions` and turn on **Developer mode**.
+          3. Click **Load unpacked** and pick the extracted folder.
+          4. On the settings page that opens, click **Open Edge privacy settings** and set tracking prevention to **Basic**.
+
+          To update, extract the new zip over the same folder and click the reload button on the extension's card in `edge://extensions`.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" strict-switch-*.zip --title "Strict Switch $GITHUB_REF_NAME" --notes-file notes.md

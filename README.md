@@ -10,9 +10,9 @@ Edge's own exceptions list turns tracking prevention fully *off* for a site, and
 
 ## Install
 
-1. Download this repository (Code > Download ZIP) and unzip it, or clone it.
+1. Download `strict-switch-*.zip` from the [latest release](../../releases/latest) and extract it to a folder you'll keep. Edge loads the extension from that folder, so don't delete it.
 2. Open `edge://extensions` and turn on **Developer mode**.
-3. Click **Load unpacked** and pick the folder that contains `manifest.json`.
+3. Click **Load unpacked** and pick the extracted folder.
 4. The settings page opens. Click **Open Edge privacy settings** and set tracking prevention to **Basic**.
 5. Optional: pin the extension to the toolbar from the puzzle-piece menu.
 
@@ -43,9 +43,17 @@ Like Edge, trackers aren't blocked on sites owned by the same company (for examp
 - Sites on Basic are covered by a single dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
 - The extension asks for `declarativeNetRequest`, `storage` and `activeTab` only. It can't read page contents or your browsing history.
 
+To update, extract a newer release over the same folder and click the reload button on the extension's card in `edge://extensions`. Your settings and Basic sites are kept.
+
+Edge only allows installing extensions outside the Add-ons store through Developer mode, which is why there's no one-click install file.
+
+## Releasing
+
+Bump `version` in `manifest.json`, commit, then push a matching tag (for example `git tag v0.1.1 && git push origin v0.1.1`). The Release workflow packages the extension and publishes it.
+
 ## Updating the blocklist
 
-Extensions loaded from source don't update automatically. To refresh the tracker list:
+The blocklist is bundled with each release. To refresh it yourself:
 
 ```sh
 node tools/build-rules.mjs
