@@ -50,7 +50,8 @@ function row(e) {
     tr.append(cell('col-time', time(e.time)), text);
     return tr;
   }
-  const repeats = e.count > 1 ? [' ', Object.assign(document.createElement('span'), { className: 'repeat', textContent: `×${e.count}` })] : [];
+  const repeats = e.count > 1 ? [' ', Object.assign(document.createElement('span'), { className: 'repeat', textContent: `×${e.count.toLocaleString()}` })] : [];
+  if (e.aggregate) repeats.unshift(' ', Object.assign(document.createElement('span'), { className: 'type', textContent: '(many addresses)' }));
   const request = e.url
     ? [e.url, ' ', Object.assign(document.createElement('span'), { className: 'type', textContent: e.type ?? '' }), ...repeats]
     : [Object.assign(document.createElement('span'), { className: 'type', textContent: e.kind === 'basic' ? 'page' : 'details not available' })];
@@ -142,7 +143,7 @@ async function buildReport() {
     '```',
     ...entries.map((e) => e.kind === 'event'
       ? `${time(e.time)}  ** ${e.text}`
-      : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${categoryLabels[e.category] ?? '-'} | ${e.url ?? '-'} ${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${GROUP_LABELS[groupOf(e)].toUpperCase()}: ${reasonFor(e, groupOf(e))}`),
+      : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${categoryLabels[e.category] ?? '-'} | ${e.url ?? '-'} ${e.aggregate ? '(many addresses) ' : ''}${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${GROUP_LABELS[groupOf(e)].toUpperCase()}: ${reasonFor(e, groupOf(e))}`),
     '```',
   ];
   if (offSummary.size) {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Strict Switch",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Strict-level tracker blocking with one-click Balanced or Basic per site, per-company control and an activity log. Built for Edge, works in Chromium browsers.",
   "minimum_chrome_version": "121",
   "permissions": [
