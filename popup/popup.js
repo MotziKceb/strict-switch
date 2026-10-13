@@ -1,4 +1,4 @@
-import { LEVELS, companyForRule, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { LEVELS, describeRule, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const levelButtons = document.querySelectorAll('.levels button');
@@ -51,11 +51,12 @@ function render() {
   $('status').textContent = settings.enabled ? `${LEVELS[current.level].label} on this site` : 'Strict layer off';
 }
 
-function openTrackers(query) {
-  const page = chrome.runtime.getURL('options/trackers.html') + (query ? `?q=${encodeURIComponent(query)}` : '');
-  chrome.tabs.create({ url: page });
+function openPage(file, query) {
+  chrome.tabs.create({ url: chrome.runtime.getURL(file) + (query ? `?q=${encodeURIComponent(query)}` : '') });
   window.close();
 }
+
+const openTrackers = (query) => openPage('options/trackers.html', query);
 
 // Tracker companies caught on this page, with blocked and allowed counts.
 async function renderBlocked() {
@@ -67,8 +68,8 @@ async function renderBlocked() {
   }
   const companies = new Map();
   for (const { rule } of rules) {
-    const match = await companyForRule(rule);
-    if (!match) continue;
+    const match = await describeRule(rule);
+    if (!match?.company) continue;
     const entry = companies.get(match.company) ?? { blocked: 0, allowed: 0 };
     entry[match.allowed ? 'allowed' : 'blocked']++;
     companies.set(match.company, entry);
@@ -117,6 +118,7 @@ $('enabled').addEventListener('change', async (e) => {
 });
 
 $('open-trackers').addEventListener('click', () => openTrackers());
+$('open-log').addEventListener('click', () => openPage('options/log.html', site));
 
 $('open-options').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();

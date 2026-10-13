@@ -138,12 +138,23 @@ details summary {
 }
 
 .engaged {
-  columns: 3 160px;
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
-  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
+
+.engaged li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+}
+
+.engaged li + li { border-top: 1px solid var(--border); }
+.engaged .blocked-note { color: var(--danger); font-size: 12px; }
 
 #add-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 

@@ -34,6 +34,12 @@ The Trackers page (from the popup or settings) lists every tracking company Stri
 
 Search by company name or tracker domain, filter to blocked or allowed companies, or include companies that haven't been caught yet to block them in advance. Sites on Basic always allow everything. Clicking a company in the popup opens it on the Trackers page.
 
+### Activity log
+
+The activity log (from the popup, the Trackers page or settings) lists every request Strict Switch blocked or allowed, with the site, company, address and the reason, such as "Strict layer (Advertising)", "Balanced site, you visit this company" or "Your rule: Block". Settings changes are logged too. Filter by site, company or address, then **Copy report** or **Download report** to get a text report with your settings and the matching entries, handy for bug reports.
+
+The log keeps the last 3,000 entries, is cleared when Edge closes, and stores addresses without query strings. It's most detailed when the extension is loaded unpacked; otherwise Edge only reports which rule matched, not the address.
+
 ## Install
 
 1. Download `strict-switch-*.zip` from the [latest release](../../releases/latest) and extract it to a folder you'll keep. Edge loads the extension from that folder, so don't delete it.
@@ -49,7 +55,7 @@ Edge only allows installing extensions outside the Add-ons store through Develop
 ## Use
 
 - **Toolbar badge:** the number of requests blocked on the current tab.
-- **Popup:** shows the current site's level (Strict, Balanced or Basic), with a one-click switch and a breakdown of what was blocked. The "Strict layer on" switch pauses blocking everywhere.
+- **Popup:** shows the current site's level (Strict, Balanced or Basic), with a one-click switch and a breakdown of what was blocked. The "Blocking" switch pauses the extension everywhere. The Log link opens the activity log filtered to the current site.
 - **Popup:** also lists the tracking companies caught on the current page.
 - **Settings:** choose which tracker categories to block, view, add or change stepped-down sites, and see which companies Balanced currently allows. You can paste a full URL; it's trimmed to the domain.
 
@@ -73,7 +79,7 @@ Like Edge, trackers aren't blocked on sites owned by the same company (for examp
 - `rules/*.json` are static [declarativeNetRequest](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest) rulesets, one per category, generated from the Disconnect list.
 - Basic sites are covered by a dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
 - Each company gets its own dynamic rules: an `allow` rule limited to Balanced sites if you visit it regularly, or an `allow` or `block` rule everywhere if you've set it to Allow or Block. Companies and their domains come from `rules/entities.json`, built from Disconnect's company list. The background worker recounts visits hourly and whenever you visit a tracker company's site.
-- Caught trackers are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.
+- Caught trackers and the activity log are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.
 - Permissions: `declarativeNetRequest` to block, `declarativeNetRequestFeedback` to see which rules matched (for the Trackers page and popup), `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the periodic recount. The extension can't read page contents.
 
 ## Releasing

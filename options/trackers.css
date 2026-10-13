@@ -2,15 +2,22 @@ main {
   max-width: 760px;
 }
 
-.back {
-  display: inline-block;
+.crumbs {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 12px;
+}
+
+.crumbs a,
+.log-link {
   color: var(--accent);
   text-decoration: none;
 }
 
+.crumbs a:hover,
+.log-link:hover { text-decoration: underline; }
+
 .back::before { content: "\2190  "; }
-.back:hover { text-decoration: underline; }
 
 .banner {
   padding: 10px 14px;

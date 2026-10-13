@@ -1,5 +1,5 @@
 import { CATEGORIES, COMPANY_RULES, companyStatus, getEngaged, getEntities, getSettings, setCompanyRule } from '../lib/core.js';
-import { clearSeen, getSeen } from '../lib/seen.js';
+import { clearSeen, getSeen } from '../lib/activity.js';
 
 const $ = (id) => document.getElementById(id);
 const categoryLabels = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
@@ -42,7 +42,7 @@ function row(name, entity) {
     const parts = [];
     if (caught.blocked) parts.push(`${caught.blocked} blocked`);
     if (caught.allowed) parts.push(`${caught.allowed} allowed`);
-    details = `${parts.join(', ')}, last ${timeAgo(caught.last)}`;
+    details = `Total ${parts.join(', ')}, last ${timeAgo(caught.last)}`;
     if (caught.sites.length) details += ` on ${caught.sites.slice(0, 3).join(', ')}`;
     if (caught.sites.length > 3) details += ` and ${caught.sites.length - 3} more`;
   } else {
@@ -67,6 +67,8 @@ function row(name, entity) {
       el('span', { className: `status ${status.state}`, textContent: status.text }),
       ' · ',
       details,
+      ' · ',
+      el('a', { className: 'log-link', href: `log.html?q=${encodeURIComponent(name)}`, textContent: 'Log' }),
     ),
   );
 }

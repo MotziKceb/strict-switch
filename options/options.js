@@ -1,4 +1,4 @@
-import { CATEGORIES, LEVELS, getEngaged, getSettings, setCategory, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { CATEGORIES, LEVELS, getEngaged, getSettings, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
@@ -71,7 +71,25 @@ function render() {
 async function renderEngaged() {
   const engaged = await getEngaged();
   $('engaged-summary').textContent = `${engaged.length} ${engaged.length === 1 ? 'company' : 'companies'}`;
-  $('engaged').replaceChildren(...engaged.map((name) => Object.assign(document.createElement('li'), { textContent: name })));
+  $('engaged').replaceChildren(...engaged.map((name) => {
+    const li = document.createElement('li');
+    const blocked = settings.companyRules[name] === 'block';
+    const action = Object.assign(document.createElement('button'), {
+      type: 'button',
+      className: 'remove',
+      textContent: blocked ? 'Unblock' : 'Block',
+    });
+    action.addEventListener('click', async () => {
+      settings = await setCompanyRule(name, blocked ? 'auto' : 'block');
+      render();
+      renderEngaged();
+    });
+    const label = document.createElement('span');
+    label.append(name);
+    if (blocked) label.append(' ', Object.assign(document.createElement('span'), { className: 'blocked-note', textContent: 'Blocked' }));
+    li.append(label, action);
+    return li;
+  }));
 }
 
 // Accepts a bare domain or a pasted URL.
@@ -115,9 +133,10 @@ $('open-edge-settings').addEventListener('click', () => {
 
 // Keep in sync with changes made from the popup or the background worker.
 chrome.storage.onChanged.addListener(async (changes, area) => {
-  if (area === 'local') return renderEngaged();
+  if (area === 'session') return;
   settings = await getSettings();
   render();
+  renderEngaged();
 });
 
 const generated = new Date(meta.generated).toLocaleDateString(undefined, { dateStyle: 'medium' });
