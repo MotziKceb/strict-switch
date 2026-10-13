@@ -7,6 +7,7 @@
   --accent: #3a5a8c;
   --accent-text: #ffffff;
   --strict: #2f7a4f;
+  --balanced: #2b6cb0;
   --basic: #a3620a;
   --danger: #b3261e;
   color-scheme: light;
@@ -22,6 +23,7 @@
     --accent: #8fb0e3;
     --accent-text: #11161f;
     --strict: #6cc893;
+    --balanced: #7fb2ec;
     --basic: #f0b45a;
     --danger: #f2827a;
     color-scheme: dark;

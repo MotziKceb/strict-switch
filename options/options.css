@@ -115,6 +115,34 @@ section {
   font: inherit;
 }
 
+select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.site-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+details summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.engaged {
+  columns: 3 160px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+}
+
 #add-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 
 .error {

@@ -1,10 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Strict Switch",
-  "version": "0.1.0",
-  "description": "Strict-level tracker blocking on top of Edge's Basic tracking prevention, with a one-click step-down per site.",
+  "version": "0.2.0",
+  "description": "Strict-level tracker blocking on top of Edge's Basic tracking prevention, with a one-click step-down to Balanced or Basic per site.",
   "minimum_chrome_version": "121",
-  "permissions": ["declarativeNetRequest", "storage", "activeTab"],
+  "permissions": [
+    "declarativeNetRequest",
+    "storage",
+    "activeTab",
+    "history",
+    "alarms"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -27,12 +33,36 @@
   },
   "declarative_net_request": {
     "rule_resources": [
-      { "id": "advertising", "enabled": true, "path": "rules/advertising.json" },
-      { "id": "analytics", "enabled": true, "path": "rules/analytics.json" },
-      { "id": "social", "enabled": true, "path": "rules/social.json" },
-      { "id": "fingerprinting", "enabled": true, "path": "rules/fingerprinting.json" },
-      { "id": "cryptomining", "enabled": true, "path": "rules/cryptomining.json" },
-      { "id": "content", "enabled": false, "path": "rules/content.json" }
+      {
+        "id": "advertising",
+        "enabled": true,
+        "path": "rules/advertising.json"
+      },
+      {
+        "id": "analytics",
+        "enabled": true,
+        "path": "rules/analytics.json"
+      },
+      {
+        "id": "social",
+        "enabled": true,
+        "path": "rules/social.json"
+      },
+      {
+        "id": "fingerprinting",
+        "enabled": true,
+        "path": "rules/fingerprinting.json"
+      },
+      {
+        "id": "cryptomining",
+        "enabled": true,
+        "path": "rules/cryptomining.json"
+      },
+      {
+        "id": "content",
+        "enabled": false,
+        "path": "rules/content.json"
+      }
     ]
   }
 }

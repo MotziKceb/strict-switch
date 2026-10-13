@@ -1,4 +1,4 @@
-import { CATEGORIES, getSettings, setCategory, setEnabled, setRelaxed, siteKey } from '../lib/core.js';
+import { CATEGORIES, LEVELS, getEngaged, getSettings, setCategory, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
@@ -37,23 +37,41 @@ function render() {
     }),
   );
 
+  const sites = Object.entries(settings.siteLevels);
   $('sites').replaceChildren(
-    ...settings.relaxedSites.map((site) => {
+    ...sites.map(([site, level]) => {
+      const select = document.createElement('select');
+      select.setAttribute('aria-label', `Level for ${site}`);
+      for (const value of ['balanced', 'basic']) {
+        select.append(new Option(LEVELS[value].label, value, false, value === level));
+      }
+      select.addEventListener('change', async () => {
+        settings = await setSiteLevel(site, select.value);
+        render();
+      });
       const remove = Object.assign(document.createElement('button'), {
         type: 'button',
         className: 'remove',
         textContent: 'Back to Strict',
       });
       remove.addEventListener('click', async () => {
-        settings = await setRelaxed(site, false);
+        settings = await setSiteLevel(site, 'strict');
         render();
       });
+      const actions = Object.assign(document.createElement('div'), { className: 'site-actions' });
+      actions.append(select, remove);
       const li = document.createElement('li');
-      li.append(site, remove);
+      li.append(site, actions);
       return li;
     }),
   );
-  $('sites-empty').hidden = settings.relaxedSites.length > 0;
+  $('sites-empty').hidden = sites.length > 0;
+}
+
+async function renderEngaged() {
+  const engaged = await getEngaged();
+  $('engaged-summary').textContent = `${engaged.length} ${engaged.length === 1 ? 'company' : 'companies'}`;
+  $('engaged').replaceChildren(...engaged.map((name) => Object.assign(document.createElement('li'), { textContent: name })));
 }
 
 // Accepts a bare domain or a pasted URL.
@@ -75,7 +93,13 @@ $('add-form').addEventListener('submit', async (e) => {
     $('add-error').textContent = 'Enter a domain like example.com or paste a URL.';
     return;
   }
-  settings = await setRelaxed(site, true);
+  const parent = siteLevel(site, settings.siteLevels).site;
+  if (parent && parent !== site) {
+    $('add-error').hidden = false;
+    $('add-error').textContent = `Already covered by ${parent}.`;
+    return;
+  }
+  settings = await setSiteLevel(site, $('add-level').value);
   $('add-input').value = '';
   render();
 });
@@ -89,9 +113,9 @@ $('open-edge-settings').addEventListener('click', () => {
   chrome.tabs.create({ url: 'edge://settings/privacy' });
 });
 
-// Keep in sync with changes made from the popup.
+// Keep in sync with changes made from the popup or the background worker.
 chrome.storage.onChanged.addListener(async (changes, area) => {
-  if (area !== 'sync') return;
+  if (area === 'local') return renderEngaged();
   settings = await getSettings();
   render();
 });
@@ -100,3 +124,4 @@ const generated = new Date(meta.generated).toLocaleDateString(undefined, { dateS
 $('list-info').textContent = `Blocklist: ${meta.source}, built ${generated}.`;
 
 render();
+renderEngaged();

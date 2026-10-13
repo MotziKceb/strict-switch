@@ -1,4 +1,4 @@
-import { CATEGORIES, getSettings, relaxedMatch, setEnabled, setRelaxed, siteKey } from '../lib/core.js';
+import { CATEGORIES, LEVELS, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const levelButtons = document.querySelectorAll('.levels button');
@@ -12,6 +12,7 @@ const isWeb = url && (url.protocol === 'http:' || url.protocol === 'https:');
 const site = isWeb ? siteKey(url.hostname) : null;
 
 let settings = await getSettings();
+const engagedCount = (await getEngaged()).length;
 
 function render() {
   $('enabled').checked = settings.enabled;
@@ -25,25 +26,28 @@ function render() {
   $('site').textContent = url.hostname.replace(/^www\./, '');
   $('controls').hidden = false;
 
-  const match = relaxedMatch(url.hostname, settings.relaxedSites);
-  const level = match ? 'basic' : 'strict';
+  const current = siteLevel(url.hostname, settings.siteLevels);
+  // A level set on a parent domain is changed on that domain.
+  const inherited = current.site && current.site !== site;
   for (const button of levelButtons) {
-    button.setAttribute('aria-checked', String(button.dataset.level === level));
-    // A site relaxed through a parent domain is changed on that domain.
-    button.disabled = !settings.enabled || Boolean(match && match !== site);
+    button.setAttribute('aria-checked', String(button.dataset.level === current.level));
+    button.disabled = !settings.enabled || inherited;
   }
 
-  const note = $('note');
+  let note = '';
   if (!settings.enabled) {
-    note.textContent = 'The Strict layer is off everywhere. Only Edge\'s own protection is active.';
-  } else if (match && match !== site) {
-    note.textContent = `Set to Basic through ${match}. Change it in Settings.`;
-  } else {
-    note.textContent = '';
+    note = 'The Strict layer is off everywhere. Only Edge\'s own protection is active.';
+  } else if (inherited) {
+    note = `Set to ${LEVELS[current.level].label} through ${current.site}. Change it in Settings.`;
+  } else if (current.level === 'balanced') {
+    note = `Trackers from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly are allowed. All others are blocked.`;
+  } else if (current.level === 'basic') {
+    note = 'Only Edge\'s own tracking prevention is active on this site.';
   }
-  note.hidden = !note.textContent;
+  $('note').textContent = note;
+  $('note').hidden = !note;
 
-  $('status').textContent = !settings.enabled ? 'Strict layer off' : match ? 'Basic on this site' : 'Strict on this site';
+  $('status').textContent = settings.enabled ? `${LEVELS[current.level].label} on this site` : 'Strict layer off';
 }
 
 async function renderBlocked() {
@@ -72,9 +76,9 @@ async function renderBlocked() {
 
 for (const button of levelButtons) {
   button.addEventListener('click', async () => {
-    const relax = button.dataset.level === 'basic';
-    if (relax === Boolean(relaxedMatch(url.hostname, settings.relaxedSites))) return;
-    settings = await setRelaxed(site, relax);
+    const level = button.dataset.level;
+    if (level === siteLevel(url.hostname, settings.siteLevels).level) return;
+    settings = await setSiteLevel(site, level);
     render();
     // Rules only affect new requests, so reload to apply the change.
     await chrome.tabs.reload(tab.id);

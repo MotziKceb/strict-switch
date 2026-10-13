@@ -1,5 +1,5 @@
 body {
-  width: 300px;
+  width: 320px;
 }
 
 header {
@@ -20,7 +20,7 @@ main {
 
 .levels {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   padding: 4px;
   border-radius: 10px;
@@ -50,6 +50,7 @@ main {
 }
 
 .levels button[data-level="strict"][aria-checked="true"] { color: var(--strict); }
+.levels button[data-level="balanced"][aria-checked="true"] { color: var(--balanced); }
 .levels button[data-level="basic"][aria-checked="true"] { color: var(--basic); }
 
 .levels button:disabled {

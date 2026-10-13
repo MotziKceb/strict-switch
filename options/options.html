@@ -10,7 +10,7 @@
 <body>
   <main>
     <h1>Strict Switch</h1>
-    <p class="muted">Strict-level tracker blocking on top of Edge's own tracking prevention. Step any site down to Basic from the toolbar button.</p>
+    <p class="muted">Strict-level tracker blocking on top of Edge's own tracking prevention. Step any site down to Balanced or Basic from the toolbar button.</p>
 
     <section class="callout">
       <h2>Set Edge to Basic</h2>
@@ -32,15 +32,28 @@
     </section>
 
     <section>
-      <h2>Sites on Basic</h2>
-      <p class="muted">These sites only get Edge's own Basic protection. Subdomains are included.</p>
+      <h2>Sites stepped down</h2>
+      <p class="muted"><strong>Balanced</strong> blocks trackers except those from companies you visit regularly. <strong>Basic</strong> leaves only Edge's own protection. Subdomains are included.</p>
       <form id="add-form">
-        <input type="text" id="add-input" placeholder="example.com" aria-label="Site to set to Basic" autocomplete="off" spellcheck="false">
+        <input type="text" id="add-input" placeholder="example.com" aria-label="Site to step down" autocomplete="off" spellcheck="false">
+        <select id="add-level" aria-label="Level">
+          <option value="balanced">Balanced</option>
+          <option value="basic">Basic</option>
+        </select>
         <button type="submit" class="button">Add</button>
       </form>
       <p class="error" id="add-error" hidden></p>
       <ul class="sites" id="sites"></ul>
       <p class="muted" id="sites-empty">No sites yet. Every site gets the Strict layer.</p>
+    </section>
+
+    <section>
+      <h2>Companies you visit regularly</h2>
+      <p class="muted">On Balanced sites, trackers from these companies are allowed, like Edge's own Balanced mode. A company is listed once you've visited its sites at least 3 times in the last 30 days, counted from your browsing history on this device. Nothing leaves your device.</p>
+      <details id="engaged-details">
+        <summary id="engaged-summary"></summary>
+        <ul class="engaged" id="engaged"></ul>
+      </details>
     </section>
   </main>
   <script type="module" src="options.js"></script>

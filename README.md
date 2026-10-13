@@ -1,12 +1,26 @@
 # Strict Switch
 
-A Microsoft Edge extension for people who want **Strict** tracking prevention everywhere, but a quick way to step individual sites down to **Basic** when Strict breaks them.
+A Microsoft Edge extension for people who want **Strict** tracking prevention everywhere, but a quick way to step individual sites down to **Balanced** or **Basic** when Strict breaks them.
 
 Edge's own exceptions list turns tracking prevention fully *off* for a site, and extensions can't change Edge's tracking prevention settings. So Strict Switch works the other way round:
 
 - **Edge itself runs on Basic.** That's the floor every site always gets, including Edge's protection against fingerprinting and cryptomining.
 - **The extension adds the Strict layer.** It blocks third-party trackers using the [Disconnect tracking protection list](https://github.com/disconnectme/disconnect-tracking-protection), the same list Edge's own tracking prevention is built on.
-- **One click steps a site down to Basic.** The toolbar popup turns the Strict layer off for the current site (and its subdomains) and reloads the page. The site still keeps Edge's Basic protection.
+- **One click steps a site down.** The toolbar popup switches the current site (and its subdomains) between three levels and reloads the page:
+
+| Level | What's blocked on the site |
+| --- | --- |
+| **Strict** (default) | Every tracker in the categories you've enabled. |
+| **Balanced** | The same, except trackers from companies you visit regularly. |
+| **Basic** | Nothing extra. Only Edge's own Basic protection. |
+
+### About Balanced
+
+Edge's Balanced mode allows trackers from companies you've "engaged" with, so things like embedded posts, logins and videos from sites you use keep working. Strict Switch does the same: a company counts as one you visit regularly once you've visited its sites at least 3 times in the last 30 days. The settings page lists those companies.
+
+Extensions can't read Edge's own engagement scores, so this is counted from your browsing history, which is why the extension asks for the history permission. It only reads it, on your device, and nothing is sent anywhere.
+
+It isn't an exact copy of Edge's Balanced. Edge's version doesn't block ad and social trackers from loading (it only blocks their cookies and storage) and doesn't touch analytics at all. Strict Switch's Balanced blocks all of them unless you visit the company, so it's stricter. Since almost everyone visits Google and Microsoft sites, their trackers will usually be allowed on Balanced sites, just like in Edge.
 
 ## Install
 
@@ -19,10 +33,10 @@ Edge's own exceptions list turns tracking prevention fully *off* for a site, and
 ## Use
 
 - **Toolbar badge:** the number of requests blocked on the current tab.
-- **Popup:** shows whether the current site is on Strict or Basic, with a one-click switch and a breakdown of what was blocked. The "Strict layer on" switch pauses blocking everywhere.
-- **Settings:** choose which tracker categories to block, and view, add or remove sites on Basic. You can paste a full URL; it's trimmed to the domain.
+- **Popup:** shows the current site's level (Strict, Balanced or Basic), with a one-click switch and a breakdown of what was blocked. The "Strict layer on" switch pauses blocking everywhere.
+- **Settings:** choose which tracker categories to block, view, add or change stepped-down sites, and see which companies Balanced currently allows. You can paste a full URL; it's trimmed to the domain.
 
-Your Basic sites and settings are stored with `chrome.storage.sync`, so they follow your Edge profile if sync is on.
+Your stepped-down sites and settings are stored with `chrome.storage.sync`, so they follow your Edge profile if sync is on.
 
 ### Categories
 
@@ -40,10 +54,11 @@ Like Edge, trackers aren't blocked on sites owned by the same company (for examp
 ## How it works
 
 - `rules/*.json` are static [declarativeNetRequest](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest) rulesets, one per category, generated from the Disconnect list.
-- Sites on Basic are covered by a single dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
-- The extension asks for `declarativeNetRequest`, `storage` and `activeTab` only. It can't read page contents or your browsing history.
+- Basic sites are covered by a dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
+- Balanced sites are covered by a dynamic `allow` rule for the domains owned by companies you visit regularly (`rules/entities.json`, built from Disconnect's company list). The background worker recounts visits hourly and whenever you visit a tracker company's site.
+- Permissions: `declarativeNetRequest` to block, `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the hourly recount. The extension can't read page contents.
 
-To update, extract a newer release over the same folder and click the reload button on the extension's card in `edge://extensions`. Your settings and Basic sites are kept.
+To update, extract a newer release over the same folder and click the reload button on the extension's card in `edge://extensions`. Your settings and stepped-down sites are kept.
 
 Edge only allows installing extensions outside the Add-ons store through Developer mode, which is why there's no one-click install file.
 

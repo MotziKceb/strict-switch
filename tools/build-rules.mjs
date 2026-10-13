@@ -68,6 +68,10 @@ for (const [name, { properties = [], resources = [] }] of Object.entries(entitie
   entityDomains.set(name, owned);
 }
 
+// Companies (or lone domains) with trackers in any category, and the domains
+// they own. Used by the Balanced level to allow companies you visit regularly.
+const trackerEntities = {};
+
 const meta = { source: 'Disconnect tracking protection list', generated: new Date().toISOString(), categories: {} };
 
 for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
@@ -101,6 +105,8 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
     const owned = entity ? [...(entityDomains.get(entity) ?? [])].sort() : [];
     if (owned.length) condition.excludedInitiatorDomains = owned;
     rules.push({ id: rules.length + 1, priority: 1, action: { type: 'block' }, condition });
+    if (entity) trackerEntities[entity] = owned;
+    else for (const domain of domains) trackerEntities[domain] = [domain];
     domainCount += domains.size;
   }
 
@@ -109,5 +115,12 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
   meta.categories[id] = { domains: domainCount, rules: rules.length };
   console.log(`${id}: ${domainCount} domains in ${rules.length} rules`);
 }
+
+const sortedEntities = Object.fromEntries(Object.entries(trackerEntities).sort(([a], [b]) => a.localeCompare(b)));
+await writeFile(
+  path.join(OUT_DIR, 'entities.json'),
+  '{\n' + Object.entries(sortedEntities).map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`).join(',\n') + '\n}\n',
+);
+console.log(`entities: ${Object.keys(sortedEntities).length}`);
 
 await writeFile(path.join(OUT_DIR, 'meta.json'), JSON.stringify(meta, null, 2) + '\n');
