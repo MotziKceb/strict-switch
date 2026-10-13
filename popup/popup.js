@@ -1,3 +1,4 @@
+import { isEdge, showBrowserText } from '../lib/browser.js';
 import { LEVELS, describeRule, getEngaged, getSettings, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
@@ -37,13 +38,17 @@ function render() {
 
   let note = '';
   if (!settings.enabled) {
-    note = 'The Strict layer is off everywhere. Only Edge\'s own protection is active.';
+    note = isEdge
+      ? 'The Strict layer is off everywhere. Only Edge\'s own protection is active.'
+      : 'The Strict layer is off everywhere. No trackers are being blocked.';
   } else if (inherited) {
     note = `Set to ${LEVELS[current.level].label} through ${current.site}. Change it in Settings.`;
   } else if (current.level === 'balanced') {
     note = `Trackers from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly are allowed, unless you've blocked them. All others are blocked.`;
   } else if (current.level === 'basic') {
-    note = 'Only Edge\'s own tracking prevention is active on this site.';
+    note = isEdge
+      ? 'Only Edge\'s own tracking prevention is active on this site.'
+      : 'No trackers are blocked on this site.';
   }
   $('note').textContent = note;
   $('note').hidden = !note;
@@ -75,8 +80,10 @@ async function renderBlocked() {
     companies.set(match.company, entry);
   }
   const total = [...companies.values()].reduce((sum, c) => sum + c.blocked, 0);
+  const allowed = [...companies.values()].reduce((sum, c) => sum + c.allowed, 0);
   $('blocked-count').textContent = total;
-  $('blocked-label').textContent = `${total === 1 ? 'tracker' : 'trackers'} blocked on this page`;
+  $('blocked-label').textContent = `${total === 1 ? 'tracker' : 'trackers'} blocked on this page`
+    + (allowed ? `, ${allowed} allowed` : '');
 
   const sorted = [...companies].sort(([, a], [, b]) => b.blocked + b.allowed - (a.blocked + a.allowed));
   const items = sorted.slice(0, MAX_COMPANIES).map(([name, { blocked, allowed }]) => {
@@ -125,5 +132,6 @@ $('open-options').addEventListener('click', () => {
   window.close();
 });
 
+showBrowserText();
 render();
 if (site) renderBlocked();

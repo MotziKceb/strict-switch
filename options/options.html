@@ -10,12 +10,18 @@
 <body>
   <main>
     <h1>Strict Switch <span class="version muted" id="version"></span></h1>
-    <p class="muted">Strict-level tracker blocking on top of Edge's own tracking prevention. Step any site down to Balanced or Basic from the toolbar button.</p>
+    <p class="muted">Strict-level tracker blocking<span data-browser="edge"> on top of Edge's own tracking prevention</span>. Step any site down to Balanced or Basic from the toolbar button.</p>
 
     <section class="callout">
-      <h2>Set Edge to Basic</h2>
-      <p>This extension provides the Strict layer, so set Edge's own tracking prevention to <strong>Basic</strong>. Every site then keeps Edge's Basic protection, even the ones you step down.</p>
-      <button type="button" class="button" id="open-edge-settings">Open Edge privacy settings</button>
+      <div data-browser="edge">
+        <h2>Set Edge to Basic</h2>
+        <p>This extension provides the Strict layer, so set Edge's own tracking prevention to <strong>Basic</strong>. Every site then keeps Edge's Basic protection, even the ones you step down.</p>
+      </div>
+      <div data-browser="other" hidden>
+        <h2>No built-in safety net</h2>
+        <p>This browser has no tracking prevention of its own, so sites you put on <strong>Basic</strong> get no tracker blocking at all. Blocking third-party cookies in the browser's settings gives them some protection.</p>
+      </div>
+      <button type="button" class="button" id="open-edge-settings">Open privacy settings</button>
     </section>
 
     <section>
@@ -28,12 +34,23 @@
       </div>
       <p class="muted">Tracker categories to block on every site that isn't stepped down.</p>
       <ul class="categories" id="categories"></ul>
+      <ul class="categories">
+        <li>
+          <label class="switch">
+            <input type="checkbox" id="block-own">
+            <span>
+              <strong>Block trackers on their owners' own sites too</strong>
+              <span class="muted">Normally a company's trackers aren't blocked on its own sites, like Google's ad and analytics trackers on YouTube and Gmail. Edge's Strict mode works the same way. Turn this on to block them there too. This is stricter than Edge and can break sites such as Facebook; put those on Basic if it does.</span>
+            </span>
+          </label>
+        </li>
+      </ul>
       <p class="muted small" id="list-info"></p>
     </section>
 
     <section>
       <h2>Sites stepped down</h2>
-      <p class="muted"><strong>Balanced</strong> blocks trackers except those from companies you visit regularly. <strong>Basic</strong> leaves only Edge's own protection. Subdomains are included.</p>
+      <p class="muted"><strong>Balanced</strong> blocks trackers except those from companies you visit regularly. <strong>Basic</strong> turns the Strict layer off<span data-browser="edge">, leaving Edge's own protection</span>. Subdomains are included.</p>
       <form id="add-form">
         <input type="text" id="add-input" placeholder="example.com" aria-label="Site to step down" autocomplete="off" spellcheck="false">
         <select id="add-level" aria-label="Level">

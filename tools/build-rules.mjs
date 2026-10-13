@@ -36,6 +36,13 @@ async function load(file, fallbackName) {
   return res.json();
 }
 
+// Rule priorities. Block rules beat the observe rules, which let a request
+// through but get it reported, so permitted trackers show up in the log.
+// The extension's dynamic rules (lib/core.js) sit above these.
+const BLOCK_PRIORITY = 3;
+const SAME_COMPANY_PRIORITY = 2;
+const CATEGORY_OFF_PRIORITY = 1;
+
 const DOMAIN_RE = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}$/;
 
 function cleanDomain(d) {
@@ -110,7 +117,7 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
     };
     const owned = [...(entityDomains.get(entity) ?? [entity])].sort();
     condition.excludedInitiatorDomains = owned;
-    rules.push({ id: rules.length + 1, priority: 1, action: { type: 'block' }, condition });
+    rules.push({ id: rules.length + 1, priority: BLOCK_PRIORITY, action: { type: 'block' }, condition });
     trackerEntities[entity] ??= { owned, trackers: {} };
     trackerEntities[entity].trackers[id] = [...domains].sort();
     domainCount += domains.size;
@@ -125,6 +132,33 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
 }
 
 const sortedEntities = Object.entries(trackerEntities).sort(([a], [b]) => a.localeCompare(b));
+
+// The observe ruleset: for each company, an allow rule for its trackers on its
+// own sites, and one per category for when that category is switched off.
+const observeRules = [];
+const observeIndex = [];
+for (const [name, { owned, trackers }] of sortedEntities) {
+  const all = [...new Set(Object.values(trackers).flat())].sort();
+  observeRules.push({
+    id: observeRules.length + 1,
+    priority: SAME_COMPANY_PRIORITY,
+    action: { type: 'allow' },
+    condition: { requestDomains: all, domainType: 'thirdParty', initiatorDomains: owned },
+  });
+  observeIndex.push([name, 'same-company', null]);
+  for (const [category, domains] of Object.entries(trackers)) {
+    observeRules.push({
+      id: observeRules.length + 1,
+      priority: CATEGORY_OFF_PRIORITY,
+      action: { type: 'allow' },
+      condition: { requestDomains: domains, domainType: 'thirdParty' },
+    });
+    observeIndex.push([name, 'category-off', category]);
+  }
+}
+await writeFile(path.join(OUT_DIR, 'observe.json'), '[\n' + observeRules.map((r) => JSON.stringify(r)).join(',\n') + '\n]\n');
+ruleIndex.observe = observeIndex;
+console.log(`observe: ${observeRules.length} rules`);
 
 await writeFile(
   path.join(OUT_DIR, 'entities.json'),

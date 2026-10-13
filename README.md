@@ -36,9 +36,13 @@ Company rules only cover the categories you have switched on in Settings, so blo
 
 ### Activity log
 
-The activity log (from the popup, the Trackers page or settings) lists every request Strict Switch blocked or allowed, with the site, company, address and the reason, such as "Strict layer (Advertising)", "Balanced site, you visit this company" or "Your rule: Block". Settings changes are logged too. Filter by site, company or address, then **Copy report** or **Download report** to get a text report with your settings and the matching entries, handy for bug reports.
+The activity log (from the popup, the Trackers page or settings) lists every tracker request Strict Switch saw, blocked or allowed, with the site, company, address and the reason, such as "Strict layer (Advertising)", "Balanced site, you visit this company", "Your rule: Block", "Same company as the site" or "Tracking content is switched off". Permitted trackers are logged too, so nothing is hidden, and repeats of the same request are folded into one line with a count. Settings changes are logged too. Filter by site, company or address, then **Copy report** or **Download report** to get a text report with your settings and the matching entries, handy for bug reports.
 
 The log keeps the last 3,000 entries, is cleared when Edge closes, and stores addresses without query strings. It's most detailed when the extension is loaded unpacked; otherwise Edge only reports which rule matched, not the address.
+
+## Chrome and other Chromium browsers
+
+Strict Switch also works in Chrome, Brave, Vivaldi and other Chromium-based browsers; load it the same way from their extensions page. The one difference: they don't have Edge's tracking prevention, so a site on **Basic** gets no tracker blocking at all instead of Edge's Basic protection. The settings page and popup say so when not running in Edge.
 
 ## Install
 
@@ -72,11 +76,12 @@ Your stepped-down sites and settings are stored with `chrome.storage.sync`, so t
 | Cryptomining | On | |
 | Tracking content | Off | Embedded videos, maps and fonts from tracking companies. Breaks many sites. |
 
-Like Edge, trackers aren't blocked on sites owned by the same company (for example `facebook.net` on `facebook.com`), and visiting a tracker's own site directly still works.
+Like Edge, trackers aren't blocked on sites owned by the same company (for example `facebook.net` on `facebook.com`, or Google's ad trackers on YouTube), and visiting a tracker's own site directly still works. To block them there too, turn on **Block trackers on their owners' own sites too** in settings. It's off by default because it's stricter than Edge and can break sites like Facebook; put those on Basic if it does.
 
 ## How it works
 
 - `rules/*.json` are static [declarativeNetRequest](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest) rulesets, one per category, generated from the Disconnect list.
+- `rules/observe.json` is an always-on ruleset of low-priority `allow` rules for every tracker. Block rules win wherever they apply; when nothing blocks a tracker (same company as the site, or its category is off), the observe rule lets it through and the match shows up in the log and on the Trackers page.
 - Basic sites are covered by a dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
 - Each company gets its own dynamic rules: an `allow` rule limited to Balanced sites if you visit it regularly, or an `allow` or `block` rule everywhere if you've set it to Allow or Block. Companies and their domains come from `rules/entities.json`, built from Disconnect's company list. The background worker recounts visits hourly and whenever you visit a tracker company's site.
 - Caught trackers and the activity log are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.

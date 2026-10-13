@@ -90,5 +90,8 @@ function logSettingsChanges(changes) {
   for (const [id, on] of diff('categories')) {
     logEvent(`Category ${CATEGORIES.find((c) => c.id === id)?.label ?? id} turned ${on ? 'on' : 'off'}`);
   }
+  if (changes.blockOwnSites) {
+    logEvent(`Blocking on owners' own sites turned ${changes.blockOwnSites.newValue ? 'on' : 'off'}`);
+  }
   if (changes.enabled) logEvent(`Strict layer turned ${changes.enabled.newValue === false ? 'off' : 'on'}`);
 }

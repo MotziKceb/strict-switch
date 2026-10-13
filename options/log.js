@@ -13,6 +13,9 @@ $('search').value = new URLSearchParams(location.search).get('q') ?? '';
 function why(entry) {
   switch (entry.kind) {
     case 'strict': return `Strict layer (${categoryLabels[entry.category] ?? entry.category})`;
+    case 'own-site': return 'Owner\'s own site, blocked by your setting';
+    case 'same-company': return 'Same company as the site';
+    case 'category-off': return `${categoryLabels[entry.category] ?? entry.category} is switched off`;
     case 'balanced': return 'Balanced site, you visit this company';
     case 'allow': return 'Your rule: Allow';
     case 'block': return 'Your rule: Block';
@@ -50,8 +53,9 @@ function row(e) {
     tr.append(cell('col-time', time(e.time)), text);
     return tr;
   }
+  const repeats = e.count > 1 ? [' ', Object.assign(document.createElement('span'), { className: 'repeat', textContent: `×${e.count}` })] : [];
   const request = e.url
-    ? [e.url, ' ', Object.assign(document.createElement('span'), { className: 'type', textContent: e.type ?? '' })]
+    ? [e.url, ' ', Object.assign(document.createElement('span'), { className: 'type', textContent: e.type ?? '' }), ...repeats]
     : [Object.assign(document.createElement('span'), { className: 'type', textContent: e.kind === 'basic' ? 'page' : 'details not available' })];
   const status = Object.assign(document.createElement('span'), {
     className: `status ${e.allowed ? 'allowed' : 'blocked'}`,
@@ -86,10 +90,10 @@ async function buildReport() {
     chrome.declarativeNetRequest.getDynamicRules(),
   ]);
   const entries = filtered().slice(-MAX_REPORT);
-  const kinds = { 1: 'basic', 1e4: 'balanced', 2e4: 'allow', 3e4: 'block' };
+  const ranges = [[4e4, 'own-site'], [3e4, 'block'], [2e4, 'allow'], [1e4, 'balanced'], [0, 'basic']];
   const ruleCounts = {};
   for (const { id } of dynamic) {
-    const kind = id >= 3e4 ? kinds[3e4] : id >= 2e4 ? kinds[2e4] : id >= 1e4 ? kinds[1e4] : kinds[1];
+    const kind = ranges.find(([base]) => id >= base)[1];
     ruleCounts[kind] = (ruleCounts[kind] ?? 0) + 1;
   }
   const query = $('search').value.trim();
@@ -107,6 +111,7 @@ async function buildReport() {
     `- Strict layer: ${settings.enabled ? 'on' : 'off'}`,
     `- Categories on: ${CATEGORIES.filter((c) => settings.categories[c.id]).map((c) => c.label).join(', ') || 'none'}`,
     `- Sites: ${Object.entries(settings.siteLevels).map(([s, l]) => `${s} (${LEVELS[l].label})`).join(', ') || 'none (all Strict)'}`,
+    `- Block on owners' own sites: ${settings.blockOwnSites ? 'on' : 'off'}`,
     `- Company rules: ${Object.entries(settings.companyRules).map(([c, r]) => `${c} (${r})`).join(', ') || 'none (all Auto)'}`,
     `- Visited regularly: ${engaged.join(', ') || 'none'}`,
     `- Enabled rulesets: ${rulesets.join(', ') || 'none'}`,
@@ -117,7 +122,7 @@ async function buildReport() {
     '```',
     ...entries.map((e) => e.kind === 'event'
       ? `${time(e.time)}  ** ${e.text}`
-      : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${e.url ?? '-'} ${e.type ?? ''} | ${e.allowed ? 'ALLOWED' : 'BLOCKED'}: ${why(e)}`),
+      : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${e.url ?? '-'} ${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${e.allowed ? 'ALLOWED' : 'BLOCKED'}: ${why(e)}`),
     '```',
   ];
   return lines.join('\n') + '\n';

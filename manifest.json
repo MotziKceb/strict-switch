@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Strict Switch",
-  "version": "0.4.2",
-  "description": "Strict-level tracker blocking on top of Edge's Basic tracking prevention, with a one-click step-down to Balanced or Basic per site.",
+  "version": "0.5.0",
+  "description": "Strict-level tracker blocking with one-click Balanced or Basic per site, per-company control and an activity log. Built for Edge, works in Chromium browsers.",
   "minimum_chrome_version": "121",
   "permissions": [
     "declarativeNetRequest",
@@ -63,6 +63,11 @@
         "id": "content",
         "enabled": false,
         "path": "rules/content.json"
+      },
+      {
+        "id": "observe",
+        "enabled": true,
+        "path": "rules/observe.json"
       }
     ]
   }

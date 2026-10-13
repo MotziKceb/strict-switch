@@ -1,4 +1,5 @@
-import { CATEGORIES, LEVELS, getEngaged, getSettings, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { isEdge, showBrowserText } from '../lib/browser.js';
+import { CATEGORIES, LEVELS, getEngaged, getSettings, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
@@ -8,6 +9,8 @@ let settings = await getSettings();
 function render() {
   $('enabled').checked = settings.enabled;
   $('categories').classList.toggle('off', !settings.enabled);
+  $('block-own').checked = settings.blockOwnSites;
+  $('block-own').disabled = !settings.enabled;
 
   $('categories').replaceChildren(
     ...CATEGORIES.map((c) => {
@@ -123,13 +126,18 @@ $('add-form').addEventListener('submit', async (e) => {
   render();
 });
 
+$('block-own').addEventListener('change', async (e) => {
+  settings = await setBlockOwnSites(e.target.checked);
+  render();
+});
+
 $('enabled').addEventListener('change', async (e) => {
   settings = await setEnabled(e.target.checked);
   render();
 });
 
 $('open-edge-settings').addEventListener('click', () => {
-  chrome.tabs.create({ url: 'edge://settings/privacy' });
+  chrome.tabs.create({ url: isEdge ? 'edge://settings/privacy' : 'chrome://settings/cookies' });
 });
 
 // Keep in sync with changes made from the popup or the background worker.
@@ -140,6 +148,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   renderEngaged();
 });
 
+showBrowserText();
 $('version').textContent = `Version ${chrome.runtime.getManifest().version}`;
 
 const generated = new Date(meta.generated).toLocaleDateString(undefined, { dateStyle: 'medium' });

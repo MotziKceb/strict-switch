@@ -52,3 +52,11 @@ main {
 .log .col-result .why { display: block; color: var(--muted); font-weight: normal; }
 
 .log tr.event td { color: var(--accent); font-style: italic; }
+
+.log td.col-request .repeat {
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--surface);
+  font-weight: 600;
+}
