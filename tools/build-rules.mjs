@@ -68,8 +68,8 @@ for (const [name, { properties = [], resources = [] }] of Object.entries(entitie
   entityDomains.set(name, owned);
 }
 
-// Companies with trackers, keyed by name: the domains they own, their tracker
-// domains and the categories those are in. A tracker domain without a known
+// Companies with trackers, keyed by name: the domains they own and their
+// tracker domains by category. A tracker domain without a known
 // owner counts as its own company. Used by the Balanced level and the
 // Trackers page.
 const trackerEntities = {};
@@ -111,9 +111,8 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
     const owned = [...(entityDomains.get(entity) ?? [entity])].sort();
     condition.excludedInitiatorDomains = owned;
     rules.push({ id: rules.length + 1, priority: 1, action: { type: 'block' }, condition });
-    trackerEntities[entity] ??= { owned, trackers: new Set(), categories: [] };
-    for (const domain of domains) trackerEntities[entity].trackers.add(domain);
-    trackerEntities[entity].categories.push(id);
+    trackerEntities[entity] ??= { owned, trackers: {} };
+    trackerEntities[entity].trackers[id] = [...domains].sort();
     domainCount += domains.size;
   }
 
@@ -125,9 +124,8 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
   console.log(`${id}: ${domainCount} domains in ${rules.length} rules`);
 }
 
-const sortedEntities = Object.entries(trackerEntities)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([name, e]) => [name, { ...e, trackers: [...e.trackers].sort() }]);
+const sortedEntities = Object.entries(trackerEntities).sort(([a], [b]) => a.localeCompare(b));
+
 await writeFile(
   path.join(OUT_DIR, 'entities.json'),
   '{\n' + sortedEntities.map(([k, v]) => `${JSON.stringify(k)}:${JSON.stringify(v)}`).join(',\n') + '\n}\n',

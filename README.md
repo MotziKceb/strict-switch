@@ -32,7 +32,7 @@ The Trackers page (from the popup or settings) lists every tracking company Stri
 | **Auto** (default) | Blocked, but allowed on Balanced sites if you visit the company regularly. |
 | **Allow** | Its trackers load on every site, including Strict ones. |
 
-Search by company name or tracker domain, filter to blocked or allowed companies, or include companies that haven't been caught yet to block them in advance. Sites on Basic always allow everything. Clicking a company in the popup opens it on the Trackers page.
+Company rules only cover the categories you have switched on in Settings, so blocking Google doesn't also block Google Fonts or "Sign in with Google" (both Tracking content) unless that category is on. Search by company name or tracker domain, filter to blocked or allowed companies, or include companies that haven't been caught yet to block them in advance. Sites on Basic always allow everything. Clicking a company in the popup opens it on the Trackers page.
 
 ### Activity log
 

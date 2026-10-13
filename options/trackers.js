@@ -34,7 +34,7 @@ function row(name, entity) {
 
   const title = el('div', { className: 'company-name' },
     el('strong', { textContent: name }),
-    el('span', { className: 'tag', textContent: entity.categories.map((c) => categoryLabels[c]).join(', ') }),
+    el('span', { className: 'tag', textContent: Object.keys(entity.trackers).map((c) => categoryLabels[c]).join(', ') }),
   );
 
   let details = '';
@@ -75,7 +75,7 @@ function row(name, entity) {
 
 function matches(name, entity, query) {
   if (!query) return true;
-  return name.toLowerCase().includes(query) || entity.trackers.some((d) => d.includes(query));
+  return name.toLowerCase().includes(query) || Object.values(entity.trackers).some((ds) => ds.some((d) => d.includes(query)));
 }
 
 function render() {
