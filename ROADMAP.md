@@ -77,9 +77,16 @@ All of these need permission to read web pages, so they are off by default and a
 
 - [ ] **Read the banner's consent record** (IAB TCF, used by most EU banners) to know exactly which vendors and purposes the user accepted or rejected, including "legitimate interest" toggles, and compare with what tried to load. One standard, no per-site upkeep.
 - [ ] **Global Privacy Control** (`Sec-GPC` header and `navigator.globalPrivacyControl`). Legally binding in California and several other US states; not formally recognised in the EU.
-- [ ] **Auto-reject, per banner vendor rather than per site.** Most banners come from a handful of vendors (OneTrust, Cookiebot, Didomi, Usercentrics, Quantcast, Sourcepoint, TrustArc and a few more), each with its own built-in "reject all" command that doesn't change when a site redesigns. That's about ten recipes to maintain instead of thousands of sites (the weak spot of rule-per-site tools like Consent-O-Matic).
-  - Generic fallback, off by default and labelled "best effort": find a cookie-shaped overlay and a "Reject all" / "Afvis alle" / "Only necessary" button in common languages. Never clicks anything resembling "accept"; logs what it clicked.
-  - **Reject, then verify:** read the consent record back to confirm the rejection registered, feeding Phase 1's evidence.
+- [ ] **Auto-reject with DuckDuckGo's autoconsent library.** Rule-per-site tools (like Consent-O-Matic) break when sites redesign and need constant upkeep, which this project can't offer. [`@duckduckgo/autoconsent`](https://github.com/duckduckgo/autoconsent) is the open-source engine behind DuckDuckGo's Cookie Pop-up Protection:
+  - **Maintained by DuckDuckGo:** rules for the common banner platforms (OneTrust, Cookiebot, Didomi, Usercentrics, Quantcast, Sourcepoint, TrustArc and many more) plus heuristic detection for unknown banners. Actively released (16.51.0 as of October 2026).
+  - **MPL-2.0 licensed:** allows commercial use and combines with our GPL-3.0 code. Its files keep their MPL notice; changes to them stay MPL.
+  - **Bundled, not fetched:** a pinned version ships inside each release (no network access, as always). Updating it is part of the regular release routine, with the version and changelog noted in release notes.
+  - **Opt-out only:** we only ever ask it to reject. Strict Switch never clicks "accept".
+  - **What we add on top:**
+    - **Reject, then verify:** read the consent record back (TCF and Google Consent Mode) to confirm the rejection registered, feeding Phase 1's evidence.
+    - **Transparency:** every banner handled appears in the activity log, with the platform it was recognised as and what was clicked.
+    - **A per-site off switch**, for the rare site where auto-reject gets in the way.
+  - Our own vendor recipes or generic fallback only if autoconsent misses something common, and then contributed upstream where possible.
 
 ### Permission lease and reminder
 
