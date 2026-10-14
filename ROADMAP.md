@@ -101,7 +101,7 @@ All of these need permission to read web pages, so they are off by default and a
 Extensions with broad access have been sold or changed direction after years of trust. Users forget what they granted. So:
 
 - [x] **The permission expires** (0.9: after 90 days unless renewed with Keep). After a set period the extension hands it back to the browser unless the user renews it. Forgetting means "it switched itself off", not "it's still on years later".
-- [x] **Recurring reminder**, every 7 days by default, snoozable for 1 to 60 days:
+- [x] **Recurring reminder**, every 7 days by default, snoozable for 7, 14, 30 or 60 days:
   > **Strict Switch can still read every site you visit.** You allowed this on [date] so auto-reject could work. It runs only on your computer, and nothing is sent anywhere unless you send a report yourself. [Keep] [Turn it off now] [Remind me in…]
 - [x] **Shown three ways** so it can't be silently missed: a system notification, a "!" badge on the toolbar icon, and a banner in the popup until acknowledged.
 - [x] **Tamper-resistant snooze:**

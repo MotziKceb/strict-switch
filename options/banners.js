@@ -7,7 +7,7 @@ import {
   ACCESS, HANDLERS, getBannerSettings, hasAccess, revokeAccess, setBannerHandler, setBannerSite, showReminderBadge, syncContentScripts,
 } from '../lib/banners.js';
 import {
-  MAX_SNOOZE_DAYS, MIN_SNOOZE_DAYS, REMIND_DAYS, clearGuard, isDue, isExpired, keep, readGuard, snooze, startLease,
+  REMIND_DAYS, SNOOZE_CHOICES, clearGuard, isDue, isExpired, keep, readGuard, snooze, startLease,
 } from '../lib/guard.js';
 import { REPO_URL } from '../lib/project.js';
 
@@ -15,7 +15,7 @@ const $ = (id) => document.getElementById(id);
 const dateText = (t) => new Date(t).toLocaleDateString(undefined, { dateStyle: 'long' });
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-for (let d = MIN_SNOOZE_DAYS; d <= MAX_SNOOZE_DAYS; d++) {
+for (const d of SNOOZE_CHOICES) {
   $('snooze-days').append(new Option(plural(d, 'day'), d, false, d === REMIND_DAYS));
 }
 

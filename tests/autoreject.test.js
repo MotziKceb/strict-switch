@@ -196,11 +196,11 @@ test('a tampered reminder date comes sooner, shown on the badge, in the popup an
   await banners.reload();
   await waitFor(async () => (await banners.getAttribute('#access', 'class')).includes('due'), { message: 'due reminder' });
   assert.equal(await banners.textContent('#access-title'), 'Strict Switch can still read every site you visit.');
-  await banners.selectOption('#snooze-days', '3');
+  await banners.selectOption('#snooze-days', '14');
   await banners.click('#snooze');
   await waitFor(async () => !(await banners.getAttribute('#access', 'class')).includes('due'), { message: 'reminder answered' });
   const guard = await call('lib/guard.js', 'readGuard');
-  assert.ok(Math.abs(guard.remindAt - (Date.now() + 3 * DAY)) < 60000);
+  assert.ok(Math.abs(guard.remindAt - (Date.now() + 14 * DAY)) < 60000);
   assert.equal(await env.sw.evaluate(() => chrome.action.getBadgeText({})), '');
 });
 
