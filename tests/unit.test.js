@@ -105,6 +105,10 @@ test('the consent record is read as confirmed, contradicted or not verifiable', 
   const denied = { ad_storage: 'denied', analytics_storage: 'denied' };
   assert.equal(classifyRecord({ tcf: tcf(), gcm: null }), 'confirmed');
   assert.equal(classifyRecord({ tcf: tcf({ purposeConsents: [1] }), gcm: null }), 'contradicted');
+  // Seen on a OneTrust site: purposes rejected, vendor switches left on.
+  const vendorsOnly = { tcf: tcf({ vendorConsents: 59 }), gcm: null };
+  assert.equal(classifyRecord(vendorsOnly), 'vendors-left');
+  assert.match(describeRecord(vendorsOnly), /^IAB TCF: no consent for any purpose, but 59 vendors are still marked as consented\./);
   assert.equal(classifyRecord({ tcf: tcf({ eventStatus: 'cmpuishown', hasString: false }), gcm: null }), 'no-choice', 'banner still open');
   assert.equal(classifyRecord({ tcf: null, gcm: { updated: true, state: denied } }), 'confirmed');
   assert.equal(classifyRecord({ tcf: null, gcm: { updated: false, state: denied } }), 'no-choice', 'the default alone shows no choice');

@@ -24,7 +24,7 @@ function matchesQuery(e, query) {
 }
 
 // Cookie banner entries, in plain words.
-const BANNER_STATUS = { confirmed: 'allowed', contradicted: 'blocked' };
+const BANNER_STATUS = { confirmed: 'allowed', 'vendors-left': 'partial', contradicted: 'blocked' };
 function bannerAction(e) {
   if (e.action === 'choice') return e.by === 'you' ? 'Consent record changed after your click' : 'Consent record changed after a click by a script';
   const clicked = e.clicked?.length ? `Clicked: ${e.clicked.map((c) => `"${c}"`).join(', ')}` : e.clicks ? `Clicked ${e.clicks} ${e.clicks === 1 ? 'time' : 'times'}` : '';
