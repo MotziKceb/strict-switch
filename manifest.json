@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Strict Switch",
-  "version": "0.6.1",
-  "description": "Strict-level tracker blocking with one-click Balanced or Basic per site, per-company control and an activity log. Built for Edge, works in Chromium browsers.",
+  "version": "0.7.0",
+  "description": "Strict tracker blocking with one-click per-site levels, per-company control and a plain-language activity log.",
   "minimum_chrome_version": "121",
   "permissions": [
     "declarativeNetRequest",
@@ -12,6 +12,9 @@
     "history",
     "alarms"
   ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; connect-src 'self'; base-uri 'none'"
+  },
   "background": {
     "service_worker": "background.js",
     "type": "module"

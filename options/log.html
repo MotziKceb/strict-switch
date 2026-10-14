@@ -29,12 +29,13 @@
     <div class="toolbar secondary">
       <span class="muted" id="count"></span>
       <span class="actions">
-        <button type="button" class="button" id="copy">Copy report</button>
+        <button type="button" class="button" id="report" title="Copies the report and opens a GitHub issue form to paste it into">Report a problem</button>
+        <button type="button" class="remove" id="copy">Copy report</button>
         <button type="button" class="remove" id="download">Download report</button>
         <button type="button" class="remove" id="clear">Clear log</button>
       </span>
     </div>
-    <p class="muted small" id="report-note">Reports include your settings and the entries matching the current filter (up to the newest 500), plus your settings changes. They list sites you've visited, so check before sharing.</p>
+    <p class="muted small" id="report-note">Reports include your settings and the entries matching the current filter (up to the newest 500), plus your settings changes. They list sites you've visited, so check before sharing. <strong>Report a problem</strong> copies the report and opens a GitHub issue form for you to paste it into; nothing is sent by the extension.</p>
     <p class="notice" id="copied" hidden></p>
 
     <div class="log-wrap">

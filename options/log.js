@@ -1,5 +1,6 @@
 import { CATEGORIES, LEVELS, dynamicRuleKind, getEngaged, getSettings, reasonFor } from '../lib/core.js';
 import { clearLog, getLog } from '../lib/activity.js';
+import { brokenSiteIssueUrl } from '../lib/project.js';
 
 const $ = (id) => document.getElementById(id);
 const categoryLabels = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
@@ -167,7 +168,15 @@ function flash(text) {
 
 $('copy').addEventListener('click', async () => {
   await navigator.clipboard.writeText(await buildReport());
-  flash('Report copied. Paste it into your chat with Claude.');
+  flash('Report copied. Paste it wherever you need it.');
+});
+
+// Copies the report, then opens the GitHub issue form for the user to paste
+// it into. Nothing is sent by the extension.
+$('report').addEventListener('click', async () => {
+  await navigator.clipboard.writeText(await buildReport());
+  const query = $('search').value.trim();
+  chrome.tabs.create({ url: brokenSiteIssueUrl(/^[a-z0-9.-]+\.[a-z]+$/i.test(query) ? query : null) });
 });
 
 $('download').addEventListener('click', async () => {

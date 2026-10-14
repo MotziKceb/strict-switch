@@ -1,4 +1,4 @@
-import { isEdge, showBrowserText } from '../lib/browser.js';
+import { browser, showBrowserText } from '../lib/browser.js';
 import { breakageList, breakageRow, categoryLabel, pageGroups } from '../lib/breakage.js';
 import { LEVELS, getEngaged, getSettings, setEnabled, setSiteAllow, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
@@ -47,9 +47,7 @@ function render() {
 
   let note = '';
   if (!settings.enabled) {
-    note = isEdge
-      ? 'The Strict layer is off everywhere. Only Edge\'s own protection is active.'
-      : 'The Strict layer is off everywhere. No trackers are being blocked.';
+    note = browser.pausedNote;
   } else if (inherited) {
     note = `Set to ${LEVELS[current.level].label} through ${current.site}. Change it in Settings.`;
   } else if (lockdown) {
@@ -58,9 +56,7 @@ function render() {
     const opened = settings.balancedCategories.map(categoryLabel).join(' and ') || 'nothing';
     note = `Opens ${opened} from ${engagedCount} ${engagedCount === 1 ? 'company' : 'companies'} you visit regularly. Everything else stays blocked.`;
   } else if (current.level === 'basic') {
-    note = isEdge
-      ? 'Only Edge\'s own tracking prevention is active on this site.'
-      : 'No trackers are blocked on this site.';
+    note = browser.basicNote;
   } else {
     note = 'Ctrl+click Strict to block every known tracker on this site.';
   }

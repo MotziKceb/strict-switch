@@ -10,18 +10,12 @@
 <body>
   <main>
     <h1>Strict Switch <span class="version muted" id="version"></span></h1>
-    <p class="muted">Strict-level tracker blocking<span data-browser="edge"> on top of Edge's own tracking prevention</span>. Step any site down to Balanced or Basic from the toolbar button.</p>
+    <p class="muted">Strict tracker blocking that works alongside your browser's own protection. Step any site down to Balanced or Basic, or lock it down, from the toolbar button.</p>
 
     <section class="callout">
-      <div data-browser="edge">
-        <h2>Set Edge to Basic</h2>
-        <p>This extension provides the Strict layer, so set Edge's own tracking prevention to <strong>Basic</strong>. Every site then keeps Edge's Basic protection, even the ones you step down.</p>
-      </div>
-      <div data-browser="other" hidden>
-        <h2>No built-in safety net</h2>
-        <p>This browser has no tracking prevention of its own, so sites you put on <strong>Basic</strong> get no tracker blocking at all. Blocking third-party cookies in the browser's settings gives them some protection.</p>
-      </div>
-      <button type="button" class="button" id="open-edge-settings">Open privacy settings</button>
+      <h2 data-browser-text="calloutTitle"></h2>
+      <p data-browser-text="calloutBody"></p>
+      <button type="button" class="button" id="open-edge-settings" data-browser-text="settingsLabel">Open privacy settings</button>
     </section>
 
     <section>
@@ -40,7 +34,7 @@
             <input type="checkbox" id="block-own">
             <span>
               <strong>Block trackers on their owners' own sites too</strong>
-              <span class="muted">On by default: a company's trackers are blocked on its own sites as well, like Google's ad trackers on YouTube. <span data-browser="edge">Edge's Strict mode lets those through. </span>This can break parts of a company's own sites, such as Outlook or OneDrive (Microsoft) or Instagram (Meta); set those sites to Balanced to open them up. Turn this off to exempt every company's own sites. Companies you set to Block on the Trackers page are always blocked on their own sites.</span>
+              <span class="muted">On by default: a company's trackers are blocked on its own sites as well, like Google's ad trackers on YouTube. <span data-browser-text="ownSitesNote"></span>This can break parts of a company's own sites, such as Outlook or OneDrive (Microsoft) or Instagram (Meta); set those sites to Balanced to open them up. Turn this off to exempt every company's own sites. Companies you set to Block on the Trackers page are always blocked on their own sites.</span>
             </span>
           </label>
         </li>
@@ -50,7 +44,7 @@
 
     <section>
       <h2>Sites with their own settings</h2>
-      <p class="muted"><strong>Lockdown</strong> (Ctrl+click Strict in the popup) blocks every known tracker, including content. <strong>Balanced</strong> opens the categories below for companies you visit regularly. <strong>Basic</strong> turns the Strict layer off<span data-browser="edge">, leaving Edge's own protection</span>. Exceptions are trackers you've allowed on one site from the popup. Subdomains are included.</p>
+      <p class="muted"><strong>Lockdown</strong> (Ctrl+click Strict in the popup) blocks every known tracker, including content. <strong>Balanced</strong> opens the categories below for companies you visit regularly. <strong>Basic</strong> turns the Strict layer off<span data-browser-text="basicLeaves"></span>. Exceptions are trackers you've allowed on one site from the popup. Subdomains are included.</p>
       <form id="add-form">
         <input type="text" id="add-input" placeholder="example.com" aria-label="Site to step down" autocomplete="off" spellcheck="false">
         <select id="add-level" aria-label="Level">
@@ -71,7 +65,7 @@
 
     <section>
       <h2>Companies you visit regularly</h2>
-      <p class="muted">On Balanced sites, trackers from these companies are allowed, like Edge's own Balanced mode. Click <strong>Block</strong> to keep a company's trackers blocked anyway. A company is listed once you've visited its sites at least 3 times in the last 30 days, counted from your browsing history on this device. Nothing leaves your device.</p>
+      <p class="muted">On Balanced sites, these companies' trackers in the categories Balanced opens are let through, similar to Microsoft Edge's Balanced mode. Click <strong>Block</strong> to keep a company's trackers blocked anyway. A company is listed once you've visited its sites at least 3 times in the last 30 days, counted from your browsing history on this device. Nothing leaves your device.</p>
       <p><a class="button" href="trackers.html">Manage trackers</a> <span class="muted">Block or allow individual companies.</span></p>
       <details id="engaged-details">
         <summary id="engaged-summary"></summary>
@@ -81,7 +75,7 @@
     <section>
       <h2>Troubleshooting</h2>
       <p class="muted">The activity log shows every request Strict Switch blocked or allowed, and why. Copy a report from it to share what happened on a site.</p>
-      <p><a class="button" href="log.html">Open activity log</a></p>
+      <p><a class="button" href="log.html">Open activity log</a> <a class="remove report-link" id="report-issue" href="#">Report a problem on GitHub</a></p>
     </section>
   </main>
   <script type="module" src="options.js"></script>

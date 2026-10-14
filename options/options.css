@@ -196,3 +196,10 @@ h3 {
 }
 
 #balanced-categories li { padding: 8px 14px; }
+
+.report-link {
+  display: inline-block;
+  margin-left: 6px;
+  text-decoration: none;
+  color: var(--text);
+}

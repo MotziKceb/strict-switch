@@ -1,4 +1,5 @@
-import { isEdge, showBrowserText } from '../lib/browser.js';
+import { browser, showBrowserText } from '../lib/browser.js';
+import { ISSUES_URL } from '../lib/project.js';
 import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
@@ -177,8 +178,13 @@ $('enabled').addEventListener('change', async (e) => {
   render();
 });
 
+$('report-issue').addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.tabs.create({ url: ISSUES_URL });
+});
+
 $('open-edge-settings').addEventListener('click', () => {
-  chrome.tabs.create({ url: isEdge ? 'edge://settings/privacy' : 'chrome://settings/cookies' });
+  chrome.tabs.create({ url: browser.settingsUrl });
 });
 
 // Keep in sync with changes made from the popup or the background worker.

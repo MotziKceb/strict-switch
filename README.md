@@ -1,12 +1,12 @@
 # Strict Switch
 
-A Microsoft Edge extension for people who want **Strict** tracking prevention everywhere, but a quick way to step individual sites down to **Balanced** or **Basic** when Strict breaks them.
+Strict tracker blocking for people who want strong privacy without learning filter lists: strict everywhere by default, opened up per site or per company in one click, and every decision explained in plain language. Built around four ideas: **convenience, control, transparency and friendliness**.
 
-Edge's own exceptions list turns tracking prevention fully *off* for a site, and extensions can't change Edge's tracking prevention settings. So Strict Switch works the other way round:
+It started as a way to get Microsoft Edge's **Strict** tracking prevention with a quick way to step individual sites down. Edge's own exceptions list turns protection fully *off* for a site, and extensions can't change Edge's settings, so Strict Switch provides its own strict layer instead:
 
-- **Edge itself runs on Basic.** That's the floor every site always gets, including Edge's protection against fingerprinting and cryptomining.
+- **Your browser keeps its own protection.** In Edge, set tracking prevention to Basic; that's the floor every site always gets. Other browsers: see [Browsers](#browsers).
 - **The extension adds the Strict layer.** It blocks third-party trackers using the [Disconnect tracking protection list](https://github.com/disconnectme/disconnect-tracking-protection), the same list Edge's own tracking prevention is built on.
-- **One click steps a site down.** The toolbar popup switches the current site (and its subdomains) between three levels and reloads the page:
+- **One click changes a site's level.** The toolbar popup switches the current site (and its subdomains) between levels and reloads the page:
 
 | Level | What's blocked on the site |
 | --- | --- |
@@ -45,9 +45,27 @@ The activity log (from the popup, the Trackers page or settings) lists every tra
 
 The log keeps the last 3,000 entries, is cleared when Edge closes, and stores addresses without query strings. It's most detailed when the extension is loaded unpacked; otherwise Edge only reports which rule matched, not the address.
 
-## Chrome and other Chromium browsers
+## Browsers
 
-Strict Switch also works in Chrome, Brave, Vivaldi and other Chromium-based browsers; load it the same way from their extensions page. The one difference: they don't have Edge's tracking prevention, so a site on **Basic** gets no tracker blocking at all instead of Edge's Basic protection. The settings page and popup say so when not running in Edge.
+Strict Switch works in any Chromium-based browser: Edge, Chrome, Brave, Opera, Vivaldi and others. It adapts its wording to what your browser blocks by itself, because that's what a site set to **Basic** is left with:
+
+| Browser | Its own protection | "Basic" means |
+| --- | --- | --- |
+| Edge | Tracking prevention (set it to Basic) | Edge's Basic protection |
+| Brave | Shields | Shields only |
+| Opera | Built-in ad and tracker blocker, if on | Opera's blocker only |
+| Chrome | None | No tracker blocking |
+| Others (Vivaldi...) | Varies; Vivaldi has its own blocker | Your browser's own protection, if any |
+
+## No network access
+
+The manifest's content security policy stops the extension from contacting any server: its pages and background worker can only load the extension's own files. Everything stays in your browser. Tracker lists are bundled with each release, and reports only leave your browser when you copy or download them yourself.
+
+## Reporting problems
+
+Open the **Log** from the popup on the affected site and click **Report a problem**. It copies a report (your settings and the log entries for that site, addresses without query strings) and opens a GitHub issue form to paste it into. Look the report over before posting; it's a public page. You can also [open an issue](https://github.com/MotziKceb/EdgeExtension/issues/new/choose) directly.
+
+See [ROADMAP.md](ROADMAP.md) for what's planned.
 
 ## Install
 

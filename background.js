@@ -30,7 +30,7 @@ chrome.alarms.onAlarm.addListener(({ name }) => {
   if (name === 'collect-matches') collectMatches();
 });
 
-// Record caught trackers for the Trackers page. Edge reports each match live
+// Record caught trackers for the Trackers page. The browser reports each match live
 // for extensions loaded unpacked; otherwise poll the recent matches.
 const liveMatches = chrome.declarativeNetRequest.onRuleMatchedDebug;
 liveMatches?.addListener(({ rule, request }) => recordMatch(rule, request));
