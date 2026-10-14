@@ -13,6 +13,7 @@ These hold for every feature on this list.
 
 - **No network access.** The manifest's content security policy stops the extension's pages and background worker from contacting any server. Tracker lists ship inside each release. Reports leave the browser only when the user copies or downloads them.
 - **Broad permissions are opt-in.** The core blocker never needs to read web pages. Any feature that does (auto-reject, reading consent banners) asks for permission when it's switched on, and the permission expires unless renewed (see [Permission lease and reminder](#permission-lease-and-reminder)).
+- **Hands off browser settings.** The extension never reads or changes browser settings it doesn't strictly need for blocking. Where a setting matters (like Do Not Track), it explains it and opens the settings page; the user decides.
 - **Facts over opinions.** Claims about companies come from public sources (their own declarations, official registries, open research data), worded as "declares" or "is registered as", with the source named.
 - **Indicators, not verdicts.** Evidence features say what was observed, how strong an indicator it is, and what it doesn't prove.
 
@@ -60,6 +61,7 @@ Cookie banners' "Reject all" is often not respected. Studies (for example Matte,
 
 An optional layer under the existing UI: the popup stays simple; clicking a company opens an "About" card; a "Why this matters" section goes deeper.
 
+- [x] **First explainer:** "Do Not Track: on or off?" in settings (0.7.1).
 - [ ] **Category explainers** written once, in plain language: what advertising, analytics, social, fingerprinting, cryptomining and tracking content requests do.
 - [ ] **Company cards** built from public data at release time:
   - What the company **declares** it uses data for (IAB Global Vendor List purposes: profiling for personalised ads, precise location, device linking...).

@@ -203,3 +203,20 @@ h3 {
   text-decoration: none;
   color: var(--text);
 }
+
+.tip {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.tip summary {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tip[open] summary { margin-bottom: 8px; }
+.tip p { margin-bottom: 10px; }
+.tip a { color: var(--accent); }
+.tip-source { font-size: 12px; }

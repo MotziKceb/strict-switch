@@ -73,6 +73,20 @@
       </details>
     </section>
     <section>
+      <h2>Browser settings worth knowing about</h2>
+      <p class="muted">Strict Switch never reads or changes your browser's settings. These notes explain a few that affect your privacy, so you can decide for yourself.</p>
+      <details class="tip">
+        <summary>"Send a Do Not Track request": on or off?</summary>
+        <p><strong>Do Not Track is effectively dead.</strong> Your browser can ask every site not to track you, but no law or standard ever required sites to listen, and almost all of them, including the big ad companies, ignore it. When the setting says sites "use their discretion", in practice that means most don't honour it.</p>
+        <p><strong>It can even work against you.</strong> Few people switch it on, so it makes your browser a little easier to recognise (fingerprinting). Apple removed it from Safari in 2019 "to prevent potential use as a fingerprinting variable", and Mozilla removed it from Firefox in 2025, noting that "in some cases, it can reduce privacy". Both now favour a newer signal, Global Privacy Control, which is on Strict Switch's roadmap.</p>
+        <p><strong>If you live in the EU,</strong> it isn't entirely toothless. In October 2023 a Berlin court ruled, in a case brought by German consumer groups against LinkedIn, that a site can't simply declare it ignores Do Not Track: under GDPR the signal can count as an objection to tracking. LinkedIn said it would appeal, so it isn't settled law. <a href="https://www.techradar.com/computing/cyber-security/do-not-track-is-back-on-track-what-berlins-ruling-could-mean-for-our-online-privacy" target="_blank" rel="noopener">Read about the ruling</a>.</p>
+        <p><strong>So:</strong> if you plan to report sites that ignore your choices, leaving it on keeps that signal on record. If not, it makes little difference, and turning it off helps your browser blend in a little more. Strict Switch blocks trackers either way.</p>
+        <p class="tip-source muted">Sources: Apple's Safari 12.1 release notes (2019), Mozilla's Firefox 135 announcement (2025), the Federation of German Consumer Organisations (vzbv) on the LinkedIn ruling (2023).</p>
+        <button type="button" class="button" id="open-dnt-settings">Open the setting</button>
+      </details>
+    </section>
+
+    <section>
       <h2>Troubleshooting</h2>
       <p class="muted">The activity log shows every request Strict Switch blocked or allowed, and why. Copy a report from it to share what happened on a site.</p>
       <p><a class="button" href="log.html">Open activity log</a> <a class="remove report-link" id="report-issue" href="#">Report a problem on GitHub</a></p>

@@ -178,6 +178,10 @@ $('enabled').addEventListener('change', async (e) => {
   render();
 });
 
+$('open-dnt-settings').addEventListener('click', () => {
+  chrome.tabs.create({ url: browser.dntSettingsUrl });
+});
+
 $('report-issue').addEventListener('click', (e) => {
   e.preventDefault();
   chrome.tabs.create({ url: ISSUES_URL });
