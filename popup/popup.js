@@ -1,5 +1,7 @@
 import { browser, showBrowserText } from '../lib/browser.js';
 import { breakageList, breakageRow, categoryLabel, pageGroups } from '../lib/breakage.js';
+import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
+import { isDue, readGuard } from '../lib/guard.js';
 import { LEVELS, getEngaged, getSettings, setEnabled, setSiteAllow, setSiteLevel, siteCategoryOverrides, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
@@ -69,6 +71,26 @@ function render() {
     ? `${LEVELS[current.level].label} on this site${customised ? ', with its own category settings' : ''}`
     : 'Strict layer off';
 }
+
+// The cookie banner reminder, until answered, and this site's auto-reject switch.
+async function renderBanners() {
+  if (!(await bannersActive())) return;
+  $('reminder').hidden = !isDue(await readGuard());
+  const { handler, sitesOff } = await getBannerSettings();
+  if (!site || handler !== 'self') return;
+  const owner = bannerSiteOff(url.hostname, sitesOff);
+  $('banner-row').hidden = false;
+  $('banner-site').checked = !owner;
+  // Switched off through a parent domain: changed in that site's settings.
+  $('banner-site').disabled = Boolean(owner && owner !== site);
+}
+
+$('banner-site').addEventListener('change', async (e) => {
+  await setBannerSite(site, e.target.checked);
+  $('banner-reload').hidden = false;
+});
+
+$('reminder-open').addEventListener('click', () => openPage('options/banners.html'));
 
 function openPage(file, params = {}) {
   const query = new URLSearchParams(params).toString();
@@ -189,4 +211,5 @@ $('open-options').addEventListener('click', () => {
 
 showBrowserText();
 render();
+renderBanners();
 if (site) renderPage();

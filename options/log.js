@@ -1,6 +1,8 @@
 import { CATEGORIES, LEVELS, dynamicRuleKind, getEngaged, getSettings, reasonFor } from '../lib/core.js';
 import { clearLog, getLog } from '../lib/activity.js';
 import { brokenSiteIssueUrl } from '../lib/project.js';
+import { VERDICTS } from '../lib/consent-record.js';
+import { HANDLERS, bannersActive, getBannerSettings } from '../lib/banners.js';
 
 const $ = (id) => document.getElementById(id);
 const categoryLabels = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
@@ -18,7 +20,20 @@ const GROUP_LABELS = { blocked: 'Blocked', allowed: 'Allowed', off: 'Category of
 const time = (t) => new Date(t).toLocaleTimeString(undefined, { hour12: false });
 
 function matchesQuery(e, query) {
-  return !query || [e.site, e.company, e.url, e.text].some((v) => v?.toLowerCase().includes(query));
+  return !query || [e.site, e.company, e.url, e.text, e.platform, e.detail].some((v) => v?.toLowerCase().includes(query));
+}
+
+// Cookie banner entries, in plain words.
+const BANNER_STATUS = { confirmed: 'allowed', contradicted: 'blocked' };
+function bannerAction(e) {
+  if (e.action === 'choice') return e.by === 'you' ? 'Consent record changed after your click' : 'Consent record changed after a click by a script';
+  const clicked = e.clicked?.length ? `Clicked: ${e.clicked.map((c) => `"${c}"`).join(', ')}` : e.clicks ? `Clicked ${e.clicks} ${e.clicks === 1 ? 'time' : 'times'}` : '';
+  if (e.action === 'failed') return `Couldn't finish rejecting${clicked ? `. ${clicked}` : ''}`;
+  return `Rejected${clicked ? `. ${clicked}` : ''}`;
+}
+function bannerWhy(e) {
+  const test = e.selfTest === true ? ' Autoconsent\'s own check passed.' : e.selfTest === false ? ' Autoconsent\'s own check failed.' : '';
+  return `${e.detail ?? ''}${test}${e.hint ? ` ${e.hint}` : ''}`.trim();
 }
 
 function filtered({ withEvents = false } = {}) {
@@ -27,7 +42,8 @@ function filtered({ withEvents = false } = {}) {
     // Reports keep settings changes for context, whatever the filter.
     // Changes also show among trackers, to explain why a tracker flips.
     if (e.kind === 'event') return withEvents || (['event', 'trackers', 'all'].includes(filter) && matchesQuery(e, query));
-    if (filter === 'event') return false;
+    if (e.kind === 'banner') return ['banners', 'trackers', 'all'].includes(filter) && matchesQuery(e, query);
+    if (filter === 'event' || filter === 'banners') return false;
     const group = groupOf(e);
     if (filter === 'trackers' && group === 'off') return false;
     if (['blocked', 'allowed', 'off'].includes(filter) && group !== filter) return false;
@@ -49,6 +65,22 @@ function row(e) {
     const text = cell('col-text', e.text);
     text.colSpan = 5;
     tr.append(cell('col-time', time(e.time)), text);
+    return tr;
+  }
+  if (e.kind === 'banner') {
+    tr.className = 'cookie-banner';
+    const status = Object.assign(document.createElement('span'), {
+      className: `status ${BANNER_STATUS[e.verdict] ?? 'off'}`,
+      textContent: VERDICTS[e.verdict] ?? VERDICTS.pending,
+    });
+    tr.append(
+      cell('col-time', time(e.time)),
+      cell('col-site', e.site ?? ''),
+      cell('col-company', e.platform ?? ''),
+      cell('col-category', 'Cookie banner'),
+      cell('col-request', bannerAction(e)),
+      cell('col-result', status, Object.assign(document.createElement('span'), { className: 'why', textContent: bannerWhy(e) })),
+    );
     return tr;
   }
   const repeats = e.count > 1 ? [' ', Object.assign(document.createElement('span'), { className: 'repeat', textContent: `×${e.count.toLocaleString()}` })] : [];
@@ -85,27 +117,30 @@ function render() {
 function summary(query) {
   const totals = { blocked: 0, allowed: 0, off: 0 };
   for (const e of log) {
-    if (e.kind !== 'event' && matchesQuery(e, query.toLowerCase())) totals[groupOf(e)] += e.count ?? 1;
+    if (e.kind !== 'event' && e.kind !== 'banner' && matchesQuery(e, query.toLowerCase())) totals[groupOf(e)] += e.count ?? 1;
   }
   return `${totals.blocked} blocked, ${totals.allowed} allowed, ${totals.off} category off`;
 }
 
 async function buildReport() {
-  const [settings, engaged, rulesets, dynamic] = await Promise.all([
+  const [settings, engaged, rulesets, dynamic, bannersOn, banners] = await Promise.all([
     getSettings(),
     getEngaged(),
     chrome.declarativeNetRequest.getEnabledRulesets(),
     chrome.declarativeNetRequest.getDynamicRules(),
+    bannersActive(),
+    getBannerSettings(),
   ]);
   const matching = filtered({ withEvents: true });
   // Unless the category-off group is what's being reported, summarize it per
   // site and domain: it's mostly a site's own content with unique file names.
   const summarizeOff = filter !== 'off';
-  const entries = matching.filter((e) => !(summarizeOff && e.kind !== 'event' && groupOf(e) === 'off')).slice(-MAX_REPORT);
+  const isRequest = (e) => e.kind !== 'event' && e.kind !== 'banner';
+  const entries = matching.filter((e) => !(summarizeOff && isRequest(e) && groupOf(e) === 'off')).slice(-MAX_REPORT);
   const offSummary = new Map();
   if (summarizeOff) {
     for (const e of matching) {
-      if (e.kind === 'event' || groupOf(e) !== 'off') continue;
+      if (!isRequest(e) || groupOf(e) !== 'off') continue;
       const host = e.url?.split('/')[0] ?? '-';
       const key = [e.site ?? '-', e.company ?? '-', categoryLabels[e.category] ?? '-', host].join(' | ');
       offSummary.set(key, (offSummary.get(key) ?? 0) + (e.count ?? 1));
@@ -135,6 +170,7 @@ async function buildReport() {
     `- Block on owners' own sites: ${settings.blockOwnSites ? 'on' : 'off'}`,
     `- Company rules: ${Object.entries(settings.companyRules).map(([c, r]) => `${c} (${r})`).join(', ') || 'none (all Auto)'}`,
     `- Visited regularly: ${engaged.join(', ') || 'none'}`,
+    `- Cookie banners: ${bannersOn ? `on, handled by ${HANDLERS[banners.handler].label}${banners.sitesOff.length ? `, auto-reject off for ${banners.sitesOff.join(', ')}` : ''}` : 'off'}`,
     `- Enabled rulesets: ${rulesets.join(', ') || 'none'}`,
     `- Dynamic rules: ${Object.entries(ruleCounts).map(([k, n]) => `${k} ${n}`).join(', ') || 'none'}`,
     '',
@@ -144,6 +180,8 @@ async function buildReport() {
     '```',
     ...entries.map((e) => e.kind === 'event'
       ? `${time(e.time)}  ** ${e.text}`
+      : e.kind === 'banner'
+        ? `${time(e.time)}  ${e.site ?? '-'} | ${e.platform ?? '-'} | Cookie banner | ${bannerAction(e)} | ${(VERDICTS[e.verdict] ?? VERDICTS.pending).toUpperCase()}: ${bannerWhy(e)}`
       : `${time(e.time)}  ${e.site ?? '-'} | ${e.company ?? '-'} | ${categoryLabels[e.category] ?? '-'} | ${e.url ?? '-'} ${e.aggregate ? '(many addresses) ' : ''}${e.type ?? ''}${e.count > 1 ? ` x${e.count}` : ''} | ${GROUP_LABELS[groupOf(e)].toUpperCase()}: ${reasonFor(e, groupOf(e))}`),
     '```',
   ];

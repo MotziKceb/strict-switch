@@ -17,7 +17,7 @@ These hold for every feature on this list.
 - **Facts over opinions.** Claims about companies come from public sources (their own declarations, official registries, open research data), worded as "declares" or "is registered as", with the source named.
 - **Indicators, not verdicts.** Evidence features say what was observed, how strong an indicator it is, and what it doesn't prove.
 
-## Where we are (0.7)
+## Where we are (0.9)
 
 - Strict, Balanced, Basic and Lockdown (Ctrl+click Strict) per site.
 - Trackers blocked on their owners' own sites by default (stricter than Edge).
@@ -27,6 +27,7 @@ These hold for every feature on this list.
 - Activity log with reasons, folding of repeats and retry storms, and copy, download and "Report a problem" reports.
 - Works in Edge, Chrome, Brave, Opera and other Chromium browsers, with wording that matches each browser's own protection.
 - GitHub issue forms for broken sites, bugs and ideas.
+- Optional cookie banner handling (0.9): auto-reject with DuckDuckGo's autoconsent, reject then verify, a permission that expires, and reminders (see Phase 3).
 
 ## Next: friends beta
 
@@ -77,19 +78,19 @@ An optional layer under the existing UI: the popup stays simple; clicking a comp
 
 All of these need permission to read web pages, so they are off by default and asked for only when switched on.
 
-- [ ] **Read the banner's consent record** (IAB TCF, used by most EU banners) to know exactly which vendors and purposes the user accepted or rejected, including "legitimate interest" toggles, and compare with what tried to load. One standard, no per-site upkeep.
+- [ ] **Read the banner's consent record** (IAB TCF, used by most EU banners). *Partly done in 0.9:* the record is read back after every banner handled or clicked, including "legitimate interest" claims, and the result goes in the log. Still to do: compare it with what tried to load. To know exactly which vendors and purposes the user accepted or rejected, including "legitimate interest" toggles, and compare with what tried to load. One standard, no per-site upkeep.
 - [ ] **Global Privacy Control** (`Sec-GPC` header and `navigator.globalPrivacyControl`). Legally binding in California and several other US states; not formally recognised in the EU.
-- [ ] **Auto-reject with DuckDuckGo's autoconsent library.** Rule-per-site tools (like Consent-O-Matic) break when sites redesign and need constant upkeep, which this project can't offer. [`@duckduckgo/autoconsent`](https://github.com/duckduckgo/autoconsent) is the open-source engine behind DuckDuckGo's Cookie Pop-up Protection:
+- [x] **Auto-reject with DuckDuckGo's autoconsent library** (0.9, autoconsent 16.52.0). Rule-per-site tools (like Consent-O-Matic) break when sites redesign and need constant upkeep, which this project can't offer. [`@duckduckgo/autoconsent`](https://github.com/duckduckgo/autoconsent) is the open-source engine behind DuckDuckGo's Cookie Pop-up Protection:
   - **Maintained by DuckDuckGo:** rules for the common banner platforms (OneTrust, Cookiebot, Didomi, Usercentrics, Quantcast, Sourcepoint, TrustArc and many more) plus heuristic detection for unknown banners. Actively released (16.51.0 as of October 2026).
   - **MPL-2.0 licensed:** allows commercial use and combines with our GPL-3.0 code. Its files keep their MPL notice; changes to them stay MPL.
   - **Bundled, not fetched:** a pinned version ships inside each release (no network access, as always). Updating it is part of the regular release routine, with the version and changelog noted in release notes.
-  - **Opt-out only:** we only ever ask it to reject. Strict Switch never clicks "accept".
+  - **Opt-out only:** we only ever ask it to reject. Strict Switch never clicks "accept". Its heuristic detection runs in "reject" mode only, banners it could only hide are left alone, and the background worker refuses the library's accept-only page snippets.
   - **What we add on top:**
     - **Reject, then verify:** read the consent record back (TCF and Google Consent Mode) to confirm the rejection registered, feeding Phase 1's evidence.
     - **Transparency:** every banner handled appears in the activity log, with the platform it was recognised as and what was clicked.
     - **A per-site off switch**, for the rare site where auto-reject gets in the way.
   - Our own vendor recipes or generic fallback only if autoconsent misses something common, and then contributed upstream where possible.
-- [ ] **Play nicely with Consent-O-Matic** (Aarhus University) and other banner tools. autoconsent itself used to run Consent-O-Matic's rules, so the projects are relatives. Two auto-clickers on one banner can collide, so a setting **"Cookie banners are handled by"**:
+- [x] **Play nicely with Consent-O-Matic** (0.9) (Aarhus University) and other banner tools. autoconsent itself used to run Consent-O-Matic's rules, so the projects are relatives. Two auto-clickers on one banner can collide, so a setting **"Cookie banners are handled by"**:
   - **Strict Switch** (autoconsent): reject, then verify.
   - **Another extension, e.g. Consent-O-Matic:** Strict Switch never touches banners, but still reads the consent record afterwards and builds the evidence. The other tool clicks; we check whether the site honoured it.
   - **Nobody, I click myself:** verification works after your own click too.
@@ -99,20 +100,20 @@ All of these need permission to read web pages, so they are off by default and a
 
 Extensions with broad access have been sold or changed direction after years of trust. Users forget what they granted. So:
 
-- [ ] **The permission expires.** After a set period the extension hands it back to the browser unless the user renews it. Forgetting means "it switched itself off", not "it's still on years later".
-- [ ] **Recurring reminder**, every 7 days by default, snoozable for 1 to 60 days:
+- [x] **The permission expires** (0.9: after 90 days unless renewed with Keep). After a set period the extension hands it back to the browser unless the user renews it. Forgetting means "it switched itself off", not "it's still on years later".
+- [x] **Recurring reminder**, every 7 days by default, snoozable for 1 to 60 days:
   > **Strict Switch can still read every site you visit.** You allowed this on [date] so auto-reject could work. It runs only on your computer, and nothing is sent anywhere unless you send a report yourself. [Keep] [Turn it off now] [Remind me in…]
-- [ ] **Shown three ways** so it can't be silently missed: a system notification, a "!" badge on the toolbar icon, and a banner in the popup until acknowledged.
-- [ ] **Tamper-resistant snooze:**
-  - Stored where web pages and content scripts can't reach it (extension-only storage), never in the shared settings storage content scripts can write.
-  - Changed only from the extension's own reminder page, by a click.
+- [x] **Shown three ways** so it can't be silently missed: a system notification, a "!" badge on the toolbar icon, and a banner in the popup until acknowledged.
+- [x] **Tamper-resistant snooze:**
+  - Stored where web pages and content scripts can't reach it (the extension's own IndexedDB), never in the shared settings storage content scripts can write.
+  - Changed only from the extension's own reminder page (the Cookie banners page), by a click.
   - Stored as an absolute date the extension computes, with the choice clamped to 1 to 60 days. Anything unreadable or more than 60 days away counts as "remind now", so tampering can only make the reminder appear **sooner**.
   - No messaging channel to other extensions, so they can't touch it.
-- [ ] **The reminder page explains itself.** A short apology for the odd location, and a collapsible "Why is this stored here?" explaining how auto-reject works, why page scripts are kept away from this setting, and what it means if reminders keep appearing sooner than chosen ("something may be interfering").
-- [ ] **Show how the extension was installed** (store, unpacked folder...) next to the list of genuine sources:
+- [x] **The reminder page explains itself.** A short apology for the odd location, and a collapsible "Why is this stored here?" explaining how auto-reject works, why page scripts are kept away from this setting, and what it means if reminders keep appearing sooner than chosen ("something may be interfering").
+- [x] **Show how the extension was installed** (store, unpacked folder...) next to the list of genuine sources:
   - the Chrome Web Store listing,
   - the Edge Add-ons listing,
-  - GitHub releases from `github.com/MotziKceb/strict-switch`, with SHA-256 checksums.
+  - GitHub releases from `github.com/MotziKceb/strict-switch`, with SHA-256 checksums (once release checksums are published; see Store readiness).
 
   Anything else is a red flag.
 

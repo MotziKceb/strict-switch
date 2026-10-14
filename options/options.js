@@ -1,5 +1,7 @@
 import { browser, showBrowserText } from '../lib/browser.js';
 import { ISSUES_URL, PRIVACY_URL } from '../lib/project.js';
+import { HANDLERS, getBannerSettings, hasAccess } from '../lib/banners.js';
+import { isDue, isExpired, readGuard } from '../lib/guard.js';
 import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
@@ -151,6 +153,16 @@ async function renderEngaged() {
   }));
 }
 
+async function renderBanners() {
+  const [access, guard, { handler }] = await Promise.all([hasAccess(), readGuard(), getBannerSettings()]);
+  if (!access || isExpired(guard)) {
+    $('banners-status').textContent = 'Off. Strict Switch can click "reject" on cookie banners for you and check that sites record it. That needs permission to read the sites you visit, so it stays off until you switch it on.';
+    return;
+  }
+  const date = new Date(guard.expiresAt).toLocaleDateString(undefined, { dateStyle: 'long' });
+  $('banners-status').textContent = `On. Cookie banners are handled by: ${HANDLERS[handler].label}. Access ends on ${date} unless you renew it.${isDue(guard) ? ' A reminder is waiting for you.' : ''}`;
+}
+
 // Accepts a bare domain or a pasted URL.
 function parseSite(text) {
   const value = text.trim();
@@ -215,7 +227,10 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   settings = await getSettings();
   render();
   renderEngaged();
+  renderBanners();
 });
+chrome.permissions.onAdded.addListener(renderBanners);
+chrome.permissions.onRemoved.addListener(renderBanners);
 
 showBrowserText();
 $('version').textContent = `Version ${chrome.runtime.getManifest().version}`;
@@ -225,3 +240,4 @@ $('list-info').textContent = `Blocklist: ${meta.source}, built ${generated}.`;
 
 render();
 renderEngaged();
+renderBanners();

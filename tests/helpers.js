@@ -2,7 +2,9 @@
 // site (the browser resolves all hostnames to it), and Chromium with the
 // extension loaded from this repository.
 
+import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import http from 'node:http';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -45,7 +47,24 @@ export async function startServer(page) {
 export const requests = (hosts, port) =>
   hosts.map((h) => `<img src="http://${h}:${port}/t.gif?${Math.random()}">`).join('');
 
-export async function launch(site) {
+// A copy of the extension as the release packages it, with the optional
+// cookie banner permissions already granted (as if the user had allowed
+// them: headless Chromium can't click the browser's permission prompt).
+export function grantedCopy() {
+  const release = readFileSync(path.join(EXT, '.github/workflows/release.yml'), 'utf8');
+  const files = release.match(/zip -r "[^"]+" (.+)/)[1].split(/\s+/);
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'strict-switch-'));
+  for (const f of files) cpSync(path.join(EXT, f), path.join(dir, f), { recursive: true });
+  const manifest = JSON.parse(readFileSync(path.join(EXT, 'manifest.json'), 'utf8'));
+  manifest.permissions.push(...manifest.optional_permissions);
+  manifest.host_permissions = manifest.optional_host_permissions;
+  delete manifest.optional_permissions;
+  delete manifest.optional_host_permissions;
+  writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+  return dir;
+}
+
+export async function launch(site, { dir = EXT } = {}) {
   const ctx = await chromium.launchPersistentContext('', {
     // The full Chromium build is needed for extensions; headless_shell can't load them.
     channel: 'chromium',
@@ -53,8 +72,8 @@ export async function launch(site) {
     headless: true,
     acceptDownloads: true,
     args: [
-      `--disable-extensions-except=${EXT}`,
-      `--load-extension=${EXT}`,
+      `--disable-extensions-except=${dir}`,
+      `--load-extension=${dir}`,
       '--host-resolver-rules=MAP * 127.0.0.1',
       '--no-proxy-server',
     ],

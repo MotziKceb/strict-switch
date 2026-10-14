@@ -136,6 +136,20 @@ test('wording matches each browser\'s own protection', async () => {
   }
 });
 
+test('cookie banner handling is off until switched on, and asks for nothing at install', async () => {
+  const granted = await env.sw.evaluate(() => chrome.permissions.getAll());
+  assert.deepEqual(granted.origins, [], 'no site access');
+  assert.ok(!granted.permissions.includes('scripting') && !granted.permissions.includes('notifications'));
+  assert.deepEqual(await env.sw.evaluate(() => chrome.scripting?.getRegisteredContentScripts() ?? []), []);
+  await waitFor(async () => (await env.helper.textContent('#banners-status')).startsWith('Off.'), { message: 'settings status' });
+  const page = await env.ctx.newPage();
+  await page.goto(env.ext('options/banners.html'));
+  await waitFor(() => page.isVisible('#turn-on'), { message: 'Switch on button' });
+  assert.equal(await page.isVisible('#access-on'), false);
+  assert.match(await page.textContent('#install'), /loaded from a folder in Developer mode/);
+  await page.close();
+});
+
 test('the extension cannot reach the network', async () => {
   const page = await env.ctx.newPage();
   page.on('console', () => {}); // the refusals are logged as errors; that's expected

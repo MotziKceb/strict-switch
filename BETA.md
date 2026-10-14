@@ -47,6 +47,7 @@ Just browse as usual. Along the way, try these when they come up naturally:
 - [ ] **A video site and a shop**, including a checkout page if you're buying something anyway.
 - [ ] **Lockdown** on a site you don't trust much (Ctrl+click Strict).
 - [ ] **Block a company** you'd rather not be tracked by, on the Trackers page.
+- [ ] **Optional: cookie banners.** In Settings, open **Cookie banner settings** and switch it on. Visit a few sites with cookie banners, then check the **Cookie banners** filter in the log: did it reject them, and did the site's record confirm it? Tell us about any banner it missed or any site it broke.
 - [ ] **Send one report**, even if nothing went wrong, so we know reporting works for you (see below).
 
 ## 4. Reporting a problem

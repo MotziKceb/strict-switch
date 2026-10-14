@@ -13,7 +13,7 @@
   <main>
     <nav class="crumbs"><a class="back" href="options.html">Settings</a><a href="trackers.html">Trackers</a></nav>
     <h1>Activity log</h1>
-    <p class="muted">Every request to a tracking company Strict Switch saw, and what happened to it. <strong class="t-blocked">Blocked</strong> and <strong class="t-allowed">allowed</strong> are real trackers. <strong>Category off</strong> is everything in a category you've switched off; with the default settings that's content like videos, images and fonts, which sites usually need. Repeats are folded into one line with a count. The log keeps the last 3,000 entries, is cleared when the browser closes, and shows addresses without their query strings.</p>
+    <p class="muted">Every request to a tracking company Strict Switch saw, and what happened to it. <strong class="t-blocked">Blocked</strong> and <strong class="t-allowed">allowed</strong> are real trackers. <strong>Category off</strong> is everything in a category you've switched off; with the default settings that's content like videos, images and fonts, which sites usually need. <strong>Cookie banners</strong> Strict Switch rejected or checked are listed too, with whether the site's consent record confirms the rejection. Repeats are folded into one line with a count. The log keeps the last 3,000 entries, is cleared when the browser closes, and shows addresses without their query strings.</p>
 
     <div class="toolbar">
       <input type="search" id="search" placeholder="Filter by site, company or address" aria-label="Filter by site, company or address" autocomplete="off" spellcheck="false">
@@ -22,6 +22,7 @@
         <button type="button" role="radio" data-filter="blocked" aria-checked="false">Blocked</button>
         <button type="button" role="radio" data-filter="allowed" aria-checked="false">Allowed</button>
         <button type="button" role="radio" data-filter="off" aria-checked="false">Category off</button>
+        <button type="button" role="radio" data-filter="banners" aria-checked="false" title="Cookie banners Strict Switch handled or checked">Cookie banners</button>
         <button type="button" role="radio" data-filter="event" aria-checked="false">Changes</button>
         <button type="button" role="radio" data-filter="all" aria-checked="false">Everything</button>
       </div>

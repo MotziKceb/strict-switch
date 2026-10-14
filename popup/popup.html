@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
+  <div class="reminder" id="reminder" hidden>
+    <strong>Strict Switch can still read every site you visit.</strong>
+    <span>You allowed this for cookie banners. Keep it, turn it off or be reminded later.</span>
+    <button type="button" class="link" id="reminder-open">Review</button>
+  </div>
   <header>
     <div class="site-row">
       <div class="site" id="site">-</div>
@@ -31,6 +36,11 @@
       </button>
     </div>
     <p class="note muted" id="note" hidden></p>
+    <label class="switch banner-site" id="banner-row" hidden title="Strict Switch clicks &quot;reject&quot; on cookie banners. Switch off for this site if it gets in the way.">
+      <input type="checkbox" id="banner-site">
+      <span>Auto-reject cookie banners here</span>
+    </label>
+    <p class="note muted" id="banner-reload" hidden>Reload the page to apply.</p>
 
     <section class="page">
       <ul class="summary">

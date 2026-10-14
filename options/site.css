@@ -87,3 +87,5 @@
 @media (max-width: 560px) {
   .site-levels { grid-template-columns: repeat(2, 1fr); }
 }
+
+#banner-note a { color: var(--accent); }
