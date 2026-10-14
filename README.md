@@ -1,1 +1,1 @@
-# EdgeExtension
+# Strict Switch
