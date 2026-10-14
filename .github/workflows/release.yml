@@ -44,11 +44,13 @@ jobs:
           cat > notes.md <<'NOTES'
           ## Install
 
-          1. Download `strict-switch-*.zip` below and extract it to a folder you'll keep (Edge loads the extension from that folder).
-          2. Open `edge://extensions` and turn on **Developer mode**.
+          1. Download `strict-switch-*.zip` below and extract it to a folder you'll keep (your browser loads the extension from that folder).
+          2. Open your browser's extensions page (`edge://extensions`, `chrome://extensions`, `brave://extensions`, `opera://extensions`, `vivaldi://extensions`) and turn on **Developer mode**.
           3. Click **Load unpacked** and pick the extracted folder.
-          4. On the settings page that opens, click **Open Edge privacy settings** and set tracking prevention to **Basic**.
+          4. Follow the note on the settings page that opens. In Edge, set tracking prevention to **Basic**.
 
-          To update, extract the new zip over the same folder and click the reload button on the extension's card in `edge://extensions`.
+          To update, extract the new zip over the same folder and click the reload button on the extension's card. Your settings are kept.
+
+          Problems? Open the Strict Switch **Log** on the affected site and click **Report a problem**.
           NOTES
           gh release create "$TAG" strict-switch-*.zip --target "$GITHUB_SHA" --title "Strict Switch $TAG" --notes-file notes.md

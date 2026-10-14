@@ -73,15 +73,27 @@ See [ROADMAP.md](ROADMAP.md) for what's planned.
 
 ## Install
 
-1. Download `strict-switch-*.zip` from the [latest release](../../releases/latest) and extract it to a folder you'll keep. Edge loads the extension from that folder, so don't delete it.
-2. Open `edge://extensions` and turn on **Developer mode**.
+Until Strict Switch is in the extension stores, install it from a GitHub release:
+
+1. Download `strict-switch-*.zip` from the [latest release](../../releases/latest) and extract it to a folder you'll keep. Your browser loads the extension from that folder, so don't delete it.
+2. Open your browser's extensions page and turn on **Developer mode**:
+   - Edge: `edge://extensions`
+   - Chrome: `chrome://extensions`
+   - Brave: `brave://extensions`
+   - Opera: `opera://extensions`
+   - Vivaldi: `vivaldi://extensions`
 3. Click **Load unpacked** and pick the extracted folder.
-4. The settings page opens. Click **Open Edge privacy settings** and set tracking prevention to **Basic**.
+4. The settings page opens with a note about your browser's own protection. In Edge, follow it to set tracking prevention to **Basic**.
 5. Optional: pin the extension to the toolbar from the puzzle-piece menu.
 
-To update, extract a newer release over the same folder and click the reload button on the extension's card in `edge://extensions`. Your settings and stepped-down sites are kept.
+Browsers only allow installing extensions from outside their stores through Developer mode, which is why there's no one-click install file. Some browsers show a reminder about developer-mode extensions at startup; it's safe to dismiss.
 
-Edge only allows installing extensions outside the Add-ons store through Developer mode, which is why there's no one-click install file.
+## Updates
+
+Strict Switch never connects to the internet, so its tracker list (and everything else) only changes when you install a new release. The settings page shows the version and when the bundled tracker list was built.
+
+- **From a browser's extension store** (once it's listed there): updates arrive automatically.
+- **From a GitHub release** (an unpacked folder): download the new zip from [Releases](../../releases/latest), extract it over the same folder, and click the reload button on the extension's card on your browser's extensions page. Your settings, sites and company choices are kept.
 
 ## Use
 
@@ -114,21 +126,14 @@ Unlike Edge, Strict also blocks a company's trackers on its own sites, such as G
 - Caught trackers and the activity log are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.
 - Permissions: `declarativeNetRequest` to block, `declarativeNetRequestFeedback` to see which rules matched (for the Trackers page and popup), `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the periodic recount. The extension can't read page contents.
 
-## Releasing
+## Development
 
-Bump `version` in `manifest.json` and merge to `main`. The Release workflow packages the extension and publishes a release for any version that hasn't been released yet.
+For people working on Strict Switch itself, from a checkout of this repository (Node.js 18 or newer):
 
-## Updating the blocklist
-
-The blocklist is bundled with each release. To refresh it yourself:
-
-```sh
-node tools/build-rules.mjs
-```
-
-Then click the reload button on the extension's card in `edge://extensions`. Requires Node.js 18 or newer. Behind a proxy, prefix the command with `NODE_USE_ENV_PROXY=1`.
-
-To regenerate the icons: `python3 tools/make-icons.py` (requires Pillow).
+- **Load it:** turn on Developer mode on your browser's extensions page, click **Load unpacked** and pick the repository folder. The activity log shows full addresses when loaded this way.
+- **Rebuild the tracker list** from the latest Disconnect data: `node tools/build-rules.mjs`, then reload the extension. Behind a proxy, prefix the command with `NODE_USE_ENV_PROXY=1`. To build from local copies of Disconnect's files: `node tools/build-rules.mjs --services services.json --entities entities.json`.
+- **Regenerate the icons:** `python3 tools/make-icons.py` (requires Pillow).
+- **Release:** bump `version` in `manifest.json` and merge to `main`. The Release workflow packages the extension and publishes a GitHub release for any version that hasn't been released yet. (Automated weekly tracker-list releases are planned; see [ROADMAP.md](ROADMAP.md).)
 
 ## License
 
