@@ -220,3 +220,11 @@ h3 {
 .tip p { margin-bottom: 10px; }
 .tip a { color: var(--accent); }
 .tip-source { font-size: 12px; }
+
+.site-name a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.site-name a:hover { color: var(--accent); text-decoration: underline; }

@@ -1,6 +1,6 @@
 import { browser, showBrowserText } from '../lib/browser.js';
 import { breakageList, breakageRow, categoryLabel, pageGroups } from '../lib/breakage.js';
-import { LEVELS, getEngaged, getSettings, setEnabled, setSiteAllow, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { LEVELS, getEngaged, getSettings, setEnabled, setSiteAllow, setSiteLevel, siteCategoryOverrides, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const levelButtons = document.querySelectorAll('.levels button');
@@ -29,6 +29,7 @@ function render() {
 
   $('site').textContent = url.hostname.replace(/^www\./, '');
   $('controls').hidden = false;
+  $('site-settings').hidden = false;
 
   const current = siteLevel(url.hostname, settings.siteLevels);
   // A level set on a parent domain is changed on that domain.
@@ -63,7 +64,10 @@ function render() {
   $('note').textContent = note;
   $('note').hidden = !note;
 
-  $('status').textContent = settings.enabled ? `${LEVELS[current.level].label} on this site` : 'Strict layer off';
+  const customised = Object.keys(siteCategoryOverrides(url.hostname, settings).overrides).length;
+  $('status').textContent = settings.enabled
+    ? `${LEVELS[current.level].label} on this site${customised ? ', with its own category settings' : ''}`
+    : 'Strict layer off';
 }
 
 function openPage(file, params = {}) {
@@ -163,6 +167,7 @@ for (const button of levelButtons) {
 }
 
 $('break-more').addEventListener('click', () => openPage('options/site.html', { site, tab: tab.id }));
+$('site-settings').addEventListener('click', () => openPage('options/site.html', { site, tab: tab.id }));
 
 $('reload').addEventListener('click', async () => {
   await chrome.tabs.reload(tab.id);

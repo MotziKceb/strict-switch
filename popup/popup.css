@@ -213,3 +213,15 @@ footer {
   color: var(--accent-text);
   font-weight: 600;
 }
+
+.site-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.site-settings {
+  flex: none;
+  font-size: 12px;
+}

@@ -1,3 +1,76 @@
+.eyebrow {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Makes it obvious that changes here are for this one site. */
+.scope {
+  margin: 8px 0 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.site-levels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.site-levels button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 6px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.site-levels button span { font-size: 11px; color: var(--muted); }
+.site-levels button:hover { background: var(--bg); }
+.site-levels button[aria-checked="true"] { background: var(--bg); border-color: currentColor; }
+.site-levels button[data-level="lockdown"][aria-checked="true"] { color: var(--danger); }
+.site-levels button[data-level="strict"][aria-checked="true"] { color: var(--strict); }
+.site-levels button[data-level="balanced"][aria-checked="true"] { color: var(--balanced); }
+.site-levels button[data-level="basic"][aria-checked="true"] { color: var(--basic); }
+
+.site-categories li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-categories .state {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.site-categories .state.changed { color: var(--accent); font-weight: 600; }
+
+.site-categories .state button {
+  display: block;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: normal;
+}
+
 .site-list {
   margin-top: 12px;
   padding: 4px 14px;
@@ -6,16 +79,11 @@
 }
 
 .site-list:empty { display: none; }
-
 .site-list .break-row { padding: 8px 0; }
 .site-list .break-detail { font-size: 12px; }
 
-.label-likely { color: var(--danger); }
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .notice { color: var(--strict); }
+
+@media (max-width: 560px) {
+  .site-levels { grid-template-columns: repeat(2, 1fr); }
+}

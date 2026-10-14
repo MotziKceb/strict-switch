@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Strict Switch",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Strict tracker blocking with one-click per-site levels, per-company control and a plain-language activity log.",
   "minimum_chrome_version": "121",
   "permissions": [

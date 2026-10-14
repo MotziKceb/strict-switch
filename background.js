@@ -97,6 +97,17 @@ function logSettingsChanges(changes) {
     for (const p of after.filter((x) => !before.includes(x))) logEvent(`Allowed ${label(p)} on ${site}`);
     for (const p of before.filter((x) => !after.includes(x))) logEvent(`Blocked ${label(p)} on ${site} again`);
   }
+  for (const [site, overrides] of diff('siteCategories')) {
+    const before = changes.siteCategories.oldValue?.[site] ?? {};
+    const after = overrides ?? {};
+    for (const id of new Set([...Object.keys(before), ...Object.keys(after)])) {
+      if (before[id] === after[id]) continue;
+      const label = CATEGORIES.find((c) => c.id === id)?.label ?? id;
+      logEvent(id in after
+        ? `${label} switched ${after[id] ? 'on' : 'off'} for ${site}`
+        : `${label} on ${site} follows the global setting again`);
+    }
+  }
   if (changes.balancedCategories) {
     logEvent(`Balanced now opens: ${changes.balancedCategories.newValue.join(', ') || 'nothing'}`);
   }

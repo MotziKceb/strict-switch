@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Strict Switch site trackers</title>
+  <title>Strict Switch site settings</title>
   <link rel="stylesheet" href="../ui/common.css">
   <link rel="stylesheet" href="options.css">
   <link rel="stylesheet" href="trackers.css">
@@ -12,21 +12,45 @@
 <body>
   <main>
     <nav class="crumbs"><a class="back" href="options.html">Settings</a><a href="trackers.html">Trackers</a></nav>
-    <h1 id="title">Trackers on this site</h1>
-    <p class="muted" id="level"></p>
-    <p class="muted">Everything blocked on the page, most likely to break it first, plus anything you've allowed on this site. Switch one on to allow it on this site only; other sites aren't affected. Changes apply when the page reloads.</p>
+    <p class="eyebrow">Site settings</p>
+    <h1 id="title">Settings for this site</h1>
+    <p class="scope" id="scope"></p>
 
-    <div class="toolbar secondary">
-      <span class="muted" id="count"></span>
-      <span class="actions">
+    <section>
+      <h2>Level</h2>
+      <div class="site-levels" id="levels" role="radiogroup" aria-label="Level for this site"></div>
+      <p class="muted" id="level-note"></p>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Tracker categories on this site</h2>
+        <button type="button" class="remove" id="reset-categories" hidden>Use global settings for all</button>
+      </div>
+      <p class="muted" id="categories-note">Switch a category off to let it through on this site only, or on to block it here even if it's off everywhere else.</p>
+      <ul class="categories site-categories" id="categories"></ul>
+    </section>
+
+    <section id="exceptions-section">
+      <div class="section-head">
+        <h2>Allowed on this site</h2>
+        <button type="button" class="remove" id="clear" hidden>Remove all</button>
+      </div>
+      <p class="muted">Single companies' trackers you've allowed here from the popup's "might break the page" list.</p>
+      <ul class="break-list site-list" id="exceptions"></ul>
+      <p class="muted" id="exceptions-empty">None.</p>
+    </section>
+
+    <section id="page-section">
+      <div class="section-head">
+        <h2>Blocked on the page right now</h2>
         <button type="button" class="button" id="reload">Reload page</button>
-        <button type="button" class="remove" id="clear" hidden>Remove all exceptions for this site</button>
-      </span>
-    </div>
-    <p class="notice" id="done" hidden></p>
-
-    <ul class="break-list site-list" id="list"></ul>
-    <p class="muted empty" id="empty" hidden>Nothing blocked on this page. If the tab was closed or moved to another site, open this page again from the popup.</p>
+      </div>
+      <p class="muted">Everything blocked on the open page, most likely to break it first. Switch one on to allow it on this site only.</p>
+      <p class="notice" id="done" hidden></p>
+      <ul class="break-list site-list" id="list"></ul>
+      <p class="muted" id="empty" hidden>Nothing blocked on the page right now.</p>
+    </section>
   </main>
   <script type="module" src="site.js"></script>
 </body>

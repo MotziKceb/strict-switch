@@ -42,7 +42,9 @@ function render() {
   );
 
   // Sites with a level other than Strict, or with exceptions.
-  const sites = [...new Set([...Object.keys(settings.siteLevels), ...Object.keys(settings.siteAllows)])].sort();
+  const sites = [...new Set([
+    ...Object.keys(settings.siteLevels), ...Object.keys(settings.siteAllows), ...Object.keys(settings.siteCategories),
+  ])].sort();
   $('sites').replaceChildren(
     ...sites.map((site) => {
       const level = settings.siteLevels[site] ?? 'strict';
@@ -70,7 +72,18 @@ function render() {
       actions.append(select, remove);
 
       const name = Object.assign(document.createElement('div'), { className: 'site-name' });
-      name.append(site);
+      name.append(Object.assign(document.createElement('a'), {
+        href: `site.html?site=${encodeURIComponent(site)}`,
+        textContent: site,
+        title: `Settings for ${site}`,
+      }));
+      const overrides = Object.entries(settings.siteCategories[site] ?? {});
+      if (overrides.length) {
+        name.append(Object.assign(document.createElement('span'), {
+          className: 'exceptions',
+          textContent: `Categories here: ${overrides.map(([id, on]) => `${CATEGORIES.find((c) => c.id === id)?.label ?? id} ${on ? 'on' : 'off'}`).join(', ')}`,
+        }));
+      }
       const exceptions = settings.siteAllows[site] ?? [];
       if (exceptions.length) {
         const line = Object.assign(document.createElement('span'), {

@@ -15,6 +15,10 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 | **Balanced** | The same, except Social and Tracking content from companies you visit regularly (configurable). Ads, analytics and the rest stay blocked. |
 | **Basic** | Nothing extra. Only Edge's own Basic protection. |
 
+### Site settings
+
+**Site settings**, next to the site name in the popup, opens one page for everything about that site: its level, its own tracker category switches (for example Advertising off or Tracking content on for just this site, each marked "changed for this site" with a way back to the global setting), the trackers you've allowed there, and what's blocked on the open page. A site's own settings beat global ones and company rules, but not Lockdown or Basic.
+
 ### Might break the page
 
 The popup lists the blocked trackers most likely to break the current page: Tracking content (videos, images, fonts, page code) and trackers on their owner's own site first, then Social (logins, comments, embedded posts). Each is grouped by company and category with a toggle that allows it **on that site only**; flip what you need and click **Reload page to apply**. The popup shows the top four; **and N more** opens a page with the full list in the same order. Per-site exceptions are listed, and can be removed, in settings.
