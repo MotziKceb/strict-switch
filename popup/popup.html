@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Strict Switch</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="site-row">
+      <div class="site" id="site">-</div>
+      <button type="button" class="link site-settings" id="site-settings" hidden title="Level, tracker categories and exceptions for this site only">Site settings</button>
+    </div>
+    <div class="muted" id="status"></div>
+  </header>
+
+  <main id="controls" hidden>
+    <div class="levels" role="radiogroup" aria-label="Tracking prevention for this site">
+      <button type="button" role="radio" data-level="strict" title="Ctrl+click for Lockdown: block every known tracker on this site">
+        <strong id="strict-label">Strict</strong>
+        <span id="strict-sub">All trackers</span>
+      </button>
+      <button type="button" role="radio" data-level="balanced">
+        <strong>Balanced</strong>
+        <span>Unvisited</span>
+      </button>
+      <button type="button" role="radio" data-level="basic">
+        <strong>Basic</strong>
+        <span data-browser-text="basicShort">Browser only</span>
+      </button>
+    </div>
+    <p class="note muted" id="note" hidden></p>
+
+    <section class="page">
+      <ul class="summary">
+        <li class="blocked" title="Trackers stopped on this page"><span class="dot"></span><strong id="n-blocked">0</strong> <span id="l-blocked">trackers blocked</span></li>
+        <li class="allowed" title="Trackers that got through, for example because the company owns this site or you allowed it"><span class="dot"></span><strong id="n-allowed">0</strong> <span id="l-allowed">trackers allowed</span></li>
+        <li class="off" title="Requests to tracking companies in categories you've switched off. With the default settings that's content like videos, images and fonts, which sites usually need."><span class="dot"></span><strong id="n-off">0</strong> <span id="l-off">not blocked, category off</span></li>
+      </ul>
+      <div class="breakage" id="breakage" hidden>
+        <h3>Might break the page</h3>
+        <p class="break-intro">Blocked here and likely needed by the page. Switch one on to allow it on this site only.</p>
+        <ul class="break-list" id="break-list"></ul>
+        <button type="button" class="link more-link" id="break-more" hidden></button>
+        <button type="button" class="button reload" id="reload" hidden>Reload page to apply</button>
+      </div>
+      <div id="groups"></div>
+    </section>
+  </main>
+
+  <p class="unavailable muted" id="unavailable" hidden>Strict Switch doesn't work on this page.</p>
+
+  <footer>
+    <label class="switch">
+      <input type="checkbox" id="enabled">
+      <span>Blocking</span>
+    </label>
+    <span class="links">
+      <button type="button" class="link" id="open-trackers">Trackers</button>
+      <button type="button" class="link" id="open-log">Log</button>
+      <button type="button" class="link" id="open-options">Settings</button>
+    </span>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

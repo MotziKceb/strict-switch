@@ -1,0 +1,52 @@
+name: A site is broken
+description: Something on a site doesn't work with Strict Switch on.
+title: "Broken site: "
+labels: ["broken site"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! The quickest way: open the Strict Switch **Log** for the site (from the popup), click **Report a problem**, and paste below. The report is already on your clipboard if you came from there.
+
+        The report lists sites you've visited and your Strict Switch settings. Look it over before posting, this is a public page.
+  - type: input
+    id: site
+    attributes:
+      label: Site
+      description: Just the domain is enough, like example.com.
+      placeholder: example.com
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What's broken?
+      description: For example "login button does nothing" or "videos don't load".
+    validations:
+      required: true
+  - type: dropdown
+    id: fixed-by
+    attributes:
+      label: What fixed it, if anything?
+      options:
+        - Nothing fixed it
+        - Turning on a toggle under "Might break the page"
+        - Setting the site to Balanced
+        - Setting the site to Basic
+        - Pausing Strict Switch (Blocking off)
+        - I haven't tried
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: Edge, Chrome, Brave, Opera, Vivaldi...
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Strict Switch report
+      description: Paste the report from the activity log (Copy report or Report a problem).
+      render: markdown

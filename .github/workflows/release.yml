@@ -1,0 +1,72 @@
+name: Release
+
+# Publishes a release with the packaged extension whenever main has a
+# manifest.json version that hasn't been released yet. To release, bump
+# "version" in manifest.json and merge to main.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # Never publish a release whose tests fail.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for an unreleased version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(jq -r .version manifest.json)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "$tag is already released."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package
+        if: steps.version.outputs.new == 'true'
+        run: zip -r "strict-switch-${{ steps.version.outputs.tag }}.zip" manifest.json background.js lib popup options ui rules icons LICENSE
+
+      - name: Publish
+        if: steps.version.outputs.new == 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'NOTES'
+          ## Install
+
+          1. Download `strict-switch-*.zip` below and extract it to a folder you'll keep (your browser loads the extension from that folder).
+          2. Open your browser's extensions page (`edge://extensions`, `chrome://extensions`, `brave://extensions`, `opera://extensions`, `vivaldi://extensions`) and turn on **Developer mode**.
+          3. Click **Load unpacked** and pick the extracted folder.
+          4. Follow the note on the settings page that opens. In Edge, set tracking prevention to **Basic**.
+
+          To update, extract the new zip over the same folder and click the reload button on the extension's card. Your settings are kept.
+
+          Problems? Open the Strict Switch **Log** on the affected site and click **Report a problem**.
+
+          New to Strict Switch or testing it? See the [beta tester guide](https://github.com/MotziKceb/strict-switch/blob/main/BETA.md) and the [privacy policy](https://github.com/MotziKceb/strict-switch/blob/main/PRIVACY.md).
+          NOTES
+          gh release create "$TAG" strict-switch-*.zip --target "$GITHUB_SHA" --title "Strict Switch $TAG" --notes-file notes.md

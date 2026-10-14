@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strict Switch activity log</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="trackers.css">
+  <link rel="stylesheet" href="log.css">
+</head>
+<body>
+  <main>
+    <nav class="crumbs"><a class="back" href="options.html">Settings</a><a href="trackers.html">Trackers</a></nav>
+    <h1>Activity log</h1>
+    <p class="muted">Every request to a tracking company Strict Switch saw, and what happened to it. <strong class="t-blocked">Blocked</strong> and <strong class="t-allowed">allowed</strong> are real trackers. <strong>Category off</strong> is everything in a category you've switched off; with the default settings that's content like videos, images and fonts, which sites usually need. Repeats are folded into one line with a count. The log keeps the last 3,000 entries, is cleared when the browser closes, and shows addresses without their query strings.</p>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Filter by site, company or address" aria-label="Filter by site, company or address" autocomplete="off" spellcheck="false">
+      <div class="filter" role="radiogroup" aria-label="Show">
+        <button type="button" role="radio" data-filter="trackers" aria-checked="true" title="Blocked and allowed trackers">Trackers</button>
+        <button type="button" role="radio" data-filter="blocked" aria-checked="false">Blocked</button>
+        <button type="button" role="radio" data-filter="allowed" aria-checked="false">Allowed</button>
+        <button type="button" role="radio" data-filter="off" aria-checked="false">Category off</button>
+        <button type="button" role="radio" data-filter="event" aria-checked="false">Changes</button>
+        <button type="button" role="radio" data-filter="all" aria-checked="false">Everything</button>
+      </div>
+    </div>
+    <div class="toolbar secondary">
+      <span class="muted" id="count"></span>
+      <span class="actions">
+        <button type="button" class="button" id="report" title="Copies the report and opens a GitHub issue form to paste it into">Report a problem</button>
+        <button type="button" class="remove" id="copy">Copy report</button>
+        <button type="button" class="remove" id="download">Download report</button>
+        <button type="button" class="remove" id="clear">Clear log</button>
+      </span>
+    </div>
+    <p class="muted small" id="report-note">Reports include your settings and the entries matching the current filter (up to the newest 500), plus your settings changes. They list sites you've visited, so check before sharing. <strong>Report a problem</strong> copies the report and opens a GitHub issue form for you to paste it into; nothing is sent by the extension.</p>
+    <p class="notice" id="copied" hidden></p>
+
+    <div class="log-wrap">
+      <table class="log">
+        <thead>
+          <tr><th>Time</th><th>Site</th><th>Company</th><th>Category</th><th>Request</th><th>Result</th></tr>
+        </thead>
+        <tbody id="entries"></tbody>
+      </table>
+    </div>
+    <p class="muted empty" id="empty" hidden></p>
+  </main>
+  <script type="module" src="log.js"></script>
+</body>
+</html>

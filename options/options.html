@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strict Switch settings</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>Strict Switch <span class="version muted" id="version"></span></h1>
+    <p class="muted">Strict tracker blocking that works alongside your browser's own protection. Step any site down to Balanced or Basic, or lock it down, from the toolbar button.</p>
+
+    <section class="callout">
+      <h2 data-browser-text="calloutTitle"></h2>
+      <p data-browser-text="calloutBody"></p>
+      <button type="button" class="button" id="open-edge-settings" data-browser-text="settingsLabel">Open privacy settings</button>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Strict layer</h2>
+        <label class="switch">
+          <input type="checkbox" id="enabled">
+          <span>On</span>
+        </label>
+      </div>
+      <p class="muted">Tracker categories to block on every site that isn't stepped down.</p>
+      <ul class="categories" id="categories"></ul>
+      <ul class="categories">
+        <li>
+          <label class="switch">
+            <input type="checkbox" id="block-own">
+            <span>
+              <strong>Block trackers on their owners' own sites too</strong>
+              <span class="muted">On by default: a company's trackers are blocked on its own sites as well, like Google's ad trackers on YouTube. <span data-browser-text="ownSitesNote"></span>This can break parts of a company's own sites, such as Outlook or OneDrive (Microsoft) or Instagram (Meta); set those sites to Balanced to open them up. Turn this off to exempt every company's own sites. Companies you set to Block on the Trackers page are always blocked on their own sites.</span>
+            </span>
+          </label>
+        </li>
+      </ul>
+      <p class="muted small" id="list-info"></p>
+    </section>
+
+    <section>
+      <h2>Sites with their own settings</h2>
+      <p class="muted"><strong>Lockdown</strong> (Ctrl+click Strict in the popup) blocks every known tracker, including content. <strong>Balanced</strong> opens the categories below for companies you visit regularly. <strong>Basic</strong> turns the Strict layer off<span data-browser-text="basicLeaves"></span>. Exceptions are trackers you've allowed on one site from the popup. Click a site for all its settings, including its own tracker categories. Subdomains are included.</p>
+      <form id="add-form">
+        <input type="text" id="add-input" placeholder="example.com" aria-label="Site to step down" autocomplete="off" spellcheck="false">
+        <select id="add-level" aria-label="Level">
+          <option value="lockdown">Lockdown</option>
+          <option value="balanced" selected>Balanced</option>
+          <option value="basic">Basic</option>
+        </select>
+        <button type="submit" class="button">Add</button>
+      </form>
+      <p class="error" id="add-error" hidden></p>
+      <ul class="sites" id="sites"></ul>
+      <p class="muted" id="sites-empty">No sites yet. Every site gets the Strict layer.</p>
+
+      <h3>Balanced opens</h3>
+      <p class="muted">The categories Balanced lets through from companies you visit regularly. Social and Tracking content are the ones that tend to break sites; ads, analytics and the rest stay blocked unless you add them here.</p>
+      <ul class="categories" id="balanced-categories"></ul>
+    </section>
+
+    <section>
+      <h2>Companies you visit regularly</h2>
+      <p class="muted">On Balanced sites, these companies' trackers in the categories Balanced opens are let through, similar to Microsoft Edge's Balanced mode. Click <strong>Block</strong> to keep a company's trackers blocked anyway. A company is listed once you've visited its sites at least 3 times in the last 30 days, counted from your browsing history on this device. Nothing leaves your device.</p>
+      <p><a class="button" href="trackers.html">Manage trackers</a> <span class="muted">Block or allow individual companies.</span></p>
+      <details id="engaged-details">
+        <summary id="engaged-summary"></summary>
+        <ul class="engaged" id="engaged"></ul>
+      </details>
+    </section>
+    <section>
+      <h2>Browser settings worth knowing about</h2>
+      <p class="muted">Strict Switch never reads or changes your browser's settings. These notes explain a few that affect your privacy, so you can decide for yourself.</p>
+      <details class="tip">
+        <summary>"Send a Do Not Track request": on or off?</summary>
+        <p><strong>Do Not Track is effectively dead.</strong> Your browser can ask every site not to track you, but no law or standard ever required sites to listen, and almost all of them, including the big ad companies, ignore it. When the setting says sites "use their discretion", in practice that means most don't honour it.</p>
+        <p><strong>It can even work against you.</strong> Few people switch it on, so it makes your browser a little easier to recognise (fingerprinting). Apple removed it from Safari in 2019 "to prevent potential use as a fingerprinting variable", and Mozilla removed it from Firefox in 2025, noting that "in some cases, it can reduce privacy". Both now favour a newer signal, Global Privacy Control, which is on Strict Switch's roadmap.</p>
+        <p><strong>If you live in the EU,</strong> it isn't entirely toothless. In October 2023 a Berlin court ruled, in a case brought by German consumer groups against LinkedIn, that a site can't simply declare it ignores Do Not Track: under GDPR the signal can count as an objection to tracking. LinkedIn said it would appeal, so it isn't settled law. <a href="https://www.techradar.com/computing/cyber-security/do-not-track-is-back-on-track-what-berlins-ruling-could-mean-for-our-online-privacy" target="_blank" rel="noopener">Read about the ruling</a>.</p>
+        <p><strong>So:</strong> if you plan to report sites that ignore your choices, leaving it on keeps that signal on record. If not, it makes little difference, and turning it off helps your browser blend in a little more. Strict Switch blocks trackers either way.</p>
+        <p class="tip-source muted">Sources: Apple's Safari 12.1 release notes (2019), Mozilla's Firefox 135 announcement (2025), the Federation of German Consumer Organisations (vzbv) on the LinkedIn ruling (2023).</p>
+        <button type="button" class="button" id="open-dnt-settings">Open the setting</button>
+      </details>
+    </section>
+
+    <section>
+      <h2>Troubleshooting</h2>
+      <p class="muted">The activity log shows every request Strict Switch blocked or allowed, and why. Copy a report from it to share what happened on a site.</p>
+      <p><a class="button" href="log.html">Open activity log</a> <a class="remove report-link" id="report-issue" href="#">Report a problem on GitHub</a> <a class="remove report-link" id="privacy" href="#">Privacy policy</a></p>
+    </section>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

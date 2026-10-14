@@ -1,0 +1,16 @@
+[
+{"id":1,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["analytics.blue","feesocrald.com","gramombird.com","istlandoll.com","mepirtedic.com","pampopholf.com","tulip18.com"],"domainType":"thirdParty","excludedInitiatorDomains":["analytics.blue","feesocrald.com","gramombird.com","istlandoll.com","mepirtedic.com","pampopholf.com","tulip18.com","vidzi.nu"]}},
+{"id":2,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["flightzy.date","zymerget.bid"],"domainType":"thirdParty","excludedInitiatorDomains":["flightzy.date","zymerget.bid"]}},
+{"id":3,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["adless.io"],"domainType":"thirdParty","excludedInitiatorDomains":["adless.io"]}},
+{"id":4,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["authedmine.com"],"domainType":"thirdParty","excludedInitiatorDomains":["authedmine.com"]}},
+{"id":5,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["bmst.pw"],"domainType":"thirdParty","excludedInitiatorDomains":["bmst.pw"]}},
+{"id":6,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["cashbeet.com","serv1swork.com"],"domainType":"thirdParty","excludedInitiatorDomains":["cashbeet.com","serv1swork.com"]}},
+{"id":7,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["coinpot.co"],"domainType":"thirdParty","excludedInitiatorDomains":["coinpot.co"]}},
+{"id":8,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["cryptaloot.pro","crypto-loot.com","gitgrub.pro","statdynamic.com","webmine.pro"],"domainType":"thirdParty","excludedInitiatorDomains":["cryptaloot.pro","crypto-loot.com","gitgrub.pro","statdynamic.com","webmine.pro"]}},
+{"id":9,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["crypto-webminer.com","ethtrader.de"],"domainType":"thirdParty","excludedInitiatorDomains":["crypto-webminer.com","ethtrader.de"]}},
+{"id":10,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["freecontent.date","freecontent.stream","hashing.win","hostingcloud.racing","hostingcloud.science","jsecoin.com"],"domainType":"thirdParty","excludedInitiatorDomains":["freecontent.date","freecontent.stream","hashing.win","hostingcloud.racing","hostingcloud.science","jsecoin.com"]}},
+{"id":11,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["service4refresh.info"],"domainType":"thirdParty","excludedInitiatorDomains":["service4refresh.info"]}},
+{"id":12,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["swiftmining.win"],"domainType":"thirdParty","excludedInitiatorDomains":["swiftmining.win"]}},
+{"id":13,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["authedwebmine.cz","webmine.cz"],"domainType":"thirdParty","excludedInitiatorDomains":["authedwebmine.cz","webmine.cz"]}},
+{"id":14,"priority":3,"action":{"type":"block"},"condition":{"requestDomains":["webminepool.com"],"domainType":"thirdParty","excludedInitiatorDomains":["webminepool.com"]}}
+]

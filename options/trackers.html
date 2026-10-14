@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strict Switch trackers</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="trackers.css">
+</head>
+<body>
+  <main>
+    <nav class="crumbs"><a class="back" href="options.html">Settings</a><a href="log.html">Activity log</a></nav>
+    <h1>Trackers</h1>
+    <p class="muted">Tracking companies Strict Switch has caught on the sites you visit. Choose per company: <strong>Block</strong> keeps its trackers blocked everywhere, including on its own sites and on Balanced sites. <strong>Auto</strong> blocks them, but allows them on Balanced sites if you visit the company regularly. <strong>Allow</strong> lets them load on every site. These rules only cover the tracker categories you have switched on in Settings, and sites on Basic always allow everything.</p>
+
+    <p class="banner" id="paused" hidden>The Strict layer is off, so nothing is being blocked right now.</p>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Search companies or domains" aria-label="Search companies or domains" autocomplete="off" spellcheck="false">
+      <div class="filter" role="radiogroup" aria-label="Show">
+        <button type="button" role="radio" data-filter="all" aria-checked="true">All</button>
+        <button type="button" role="radio" data-filter="blocked" aria-checked="false">Blocked</button>
+        <button type="button" role="radio" data-filter="allowed" aria-checked="false">Allowed</button>
+      </div>
+    </div>
+    <div class="toolbar secondary">
+      <label class="switch">
+        <input type="checkbox" id="show-all">
+        <span>Include companies not caught yet</span>
+      </label>
+      <span class="muted" id="count"></span>
+    </div>
+
+    <ul class="companies" id="companies"></ul>
+    <p class="muted empty" id="empty" hidden></p>
+
+    <p class="footer-actions">
+      <button type="button" class="remove" id="clear">Clear caught list</button>
+    </p>
+  </main>
+  <script type="module" src="trackers.js"></script>
+</body>
+</html>
