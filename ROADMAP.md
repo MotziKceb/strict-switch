@@ -119,6 +119,7 @@ Extensions with broad access have been sold or changed direction after years of 
 
 ## Ideas parked for later
 
+- Objecting to "legitimate interest" by default. A banner's reject button usually only covers consent; objecting means going into each platform's second layer (or its own JavaScript), one recipe per platform, which needs constant upkeep. Of autoconsent's 955 rules (16.52.0), only Google's Funding Choices unticks legitimate interest when rejecting. For now the activity log reports how many purposes and vendors still claim it after each banner.
 - Cookie clean-up after rejecting (needs the cookies permission and broad access; can log users out).
 - CNAME-cloaked tracker detection (trackers hidden behind a site's own subdomain). Extensions can't see DNS records in Chromium; would need a published list.
 - Firefox port (its declarativeNetRequest support differs).
