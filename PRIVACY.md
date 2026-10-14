@@ -69,4 +69,4 @@ Changes are made in this file, in the public repository, so every version and ev
 
 ## Contact
 
-Questions or concerns: [open an issue](https://github.com/MotziKceb/EdgeExtension/issues/new/choose) on GitHub. For anything you'd rather not discuss publicly, contact the maintainer through their [GitHub profile](https://github.com/MotziKceb).
+Questions or concerns: [open an issue](https://github.com/MotziKceb/Strict-Switch/issues/new/choose) on GitHub. For anything you'd rather not discuss publicly, contact the maintainer through their [GitHub profile](https://github.com/MotziKceb).

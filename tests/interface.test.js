@@ -100,7 +100,7 @@ test('reports keep settings changes and open the right issue form', async () => 
   await waitFor(() => page.evaluate(() => window.opened.length), { message: 'issue form' });
   assert.equal(
     (await page.evaluate(() => window.opened))[0],
-    'https://github.com/MotziKceb/EdgeExtension/issues/new?template=site-broken.yml&title=Broken%20site%3A%20news.test&site=news.test',
+    'https://github.com/MotziKceb/Strict-Switch/issues/new?template=site-broken.yml&title=Broken%20site%3A%20news.test&site=news.test',
   );
   const report = await page.evaluate(() => navigator.clipboard.readText());
   assert.match(report, /^# Strict Switch report/);

@@ -67,7 +67,7 @@ The manifest's content security policy stops the extension from contacting any s
 
 ## Reporting problems
 
-Open the **Log** from the popup on the affected site and click **Report a problem**. It copies a report (your settings and the log entries for that site, addresses without query strings) and opens a GitHub issue form to paste it into. Look the report over before posting; it's a public page. You can also [open an issue](https://github.com/MotziKceb/EdgeExtension/issues/new/choose) directly.
+Open the **Log** from the popup on the affected site and click **Report a problem**. It copies a report (your settings and the log entries for that site, addresses without query strings) and opens a GitHub issue form to paste it into. Look the report over before posting; it's a public page. You can also [open an issue](https://github.com/MotziKceb/Strict-Switch/issues/new/choose) directly.
 
 See [ROADMAP.md](ROADMAP.md) for what's planned, [PRIVACY.md](PRIVACY.md) for exactly what the extension stores and reads, and [BETA.md](BETA.md) if you're helping test it.
 
