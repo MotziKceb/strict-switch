@@ -87,6 +87,11 @@ All of these need permission to read web pages, so they are off by default and a
     - **Transparency:** every banner handled appears in the activity log, with the platform it was recognised as and what was clicked.
     - **A per-site off switch**, for the rare site where auto-reject gets in the way.
   - Our own vendor recipes or generic fallback only if autoconsent misses something common, and then contributed upstream where possible.
+- [ ] **Play nicely with Consent-O-Matic** (Aarhus University) and other banner tools. autoconsent itself used to run Consent-O-Matic's rules, so the projects are relatives. Two auto-clickers on one banner can collide, so a setting **"Cookie banners are handled by"**:
+  - **Strict Switch** (autoconsent): reject, then verify.
+  - **Another extension, e.g. Consent-O-Matic:** Strict Switch never touches banners, but still reads the consent record afterwards and builds the evidence. The other tool clicks; we check whether the site honoured it.
+  - **Nobody, I click myself:** verification works after your own click too.
+  - No detection of other extensions (that needs the "management" permission, which breaks the hands-off rule). Instead, a hint: if a banner's consent record changes without Strict Switch or the user acting, suggest "It looks like another extension handled this banner".
 
 ### Permission lease and reminder
 
