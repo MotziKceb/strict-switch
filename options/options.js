@@ -1,5 +1,5 @@
 import { browser, showBrowserText } from '../lib/browser.js';
-import { ISSUES_URL } from '../lib/project.js';
+import { ISSUES_URL, PRIVACY_URL } from '../lib/project.js';
 import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
@@ -193,6 +193,11 @@ $('enabled').addEventListener('change', async (e) => {
 
 $('open-dnt-settings').addEventListener('click', () => {
   chrome.tabs.create({ url: browser.dntSettingsUrl });
+});
+
+$('privacy').addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.tabs.create({ url: PRIVACY_URL });
 });
 
 $('report-issue').addEventListener('click', (e) => {

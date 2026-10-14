@@ -30,13 +30,15 @@ These hold for every feature on this list.
 
 ## Next: friends beta
 
+- [x] Beta tester guide (`BETA.md`): install per browser, a quick tour, first-week checklist, how to report, known issues, feedback questions.
+
 - [ ] Merge to `main` so the release workflow publishes the first GitHub release.
 - [ ] A handful of testers across Edge, Chrome and Brave, for two weeks, reporting through the issue forms.
 - [ ] Watch for: sites that only work on Basic, confusing wording, Lockdown and retry storms, performance on heavy sites.
 
 ## Store readiness (Chrome Web Store, Edge Add-ons)
 
-- [ ] **Privacy policy** (`PRIVACY.md`): collects nothing, sends nothing; what is stored locally and why. The no-network manifest is the proof.
+- [x] **Privacy policy** (`PRIVACY.md`): collects nothing, sends nothing; what is stored, where and why, including what browser sync copies. The no-network manifest is the proof.
 - [ ] **Permission justifications** for the listings. History and match feedback both show as "Read your browsing history"; explain both.
 - [ ] **Data licensing.** Disconnect's list (and DuckDuckGo's Tracker Radar, if used) are CC BY-NC-SA 4.0: fine for a free project, unclear with donations, not fine with paid features. Before any Ko-fi or similar, email Disconnect for written permission, or plan an alternative source.
 - [ ] **Automated list releases.** A scheduled workflow rebuilds the rulesets weekly, bumps the version if anything changed, and submits to both stores through their publishing APIs. Store installs update silently; sideloaded installs update manually.

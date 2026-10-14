@@ -66,5 +66,7 @@ jobs:
           To update, extract the new zip over the same folder and click the reload button on the extension's card. Your settings are kept.
 
           Problems? Open the Strict Switch **Log** on the affected site and click **Report a problem**.
+
+          New to Strict Switch or testing it? See the [beta tester guide](https://github.com/MotziKceb/EdgeExtension/blob/main/BETA.md) and the [privacy policy](https://github.com/MotziKceb/EdgeExtension/blob/main/PRIVACY.md).
           NOTES
           gh release create "$TAG" strict-switch-*.zip --target "$GITHUB_SHA" --title "Strict Switch $TAG" --notes-file notes.md
