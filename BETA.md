@@ -10,7 +10,7 @@ Thanks for trying Strict Switch! This guide gets you set up in five minutes, sho
 
 Strict Switch isn't in the extension stores yet, so it's installed from a folder.
 
-1. Download `strict-switch-*.zip` from the [latest release](https://github.com/MotziKceb/Strict-Switch/releases/latest).
+1. Download `strict-switch-*.zip` from the [latest release](https://github.com/MotziKceb/strict-switch/releases/latest).
 2. Extract it to a folder you'll **keep**, for example `Documents\Strict Switch`. Your browser runs the extension from that folder, so don't delete it.
 3. Open your browser's extensions page by typing this in the address bar:
    - Edge: `edge://extensions`

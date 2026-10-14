@@ -112,7 +112,7 @@ Extensions with broad access have been sold or changed direction after years of 
 - [ ] **Show how the extension was installed** (store, unpacked folder...) next to the list of genuine sources:
   - the Chrome Web Store listing,
   - the Edge Add-ons listing,
-  - GitHub releases from `github.com/MotziKceb/Strict-Switch`, with SHA-256 checksums.
+  - GitHub releases from `github.com/MotziKceb/strict-switch`, with SHA-256 checksums.
 
   Anything else is a red flag.
 

@@ -67,6 +67,6 @@ jobs:
 
           Problems? Open the Strict Switch **Log** on the affected site and click **Report a problem**.
 
-          New to Strict Switch or testing it? See the [beta tester guide](https://github.com/MotziKceb/Strict-Switch/blob/main/BETA.md) and the [privacy policy](https://github.com/MotziKceb/Strict-Switch/blob/main/PRIVACY.md).
+          New to Strict Switch or testing it? See the [beta tester guide](https://github.com/MotziKceb/strict-switch/blob/main/BETA.md) and the [privacy policy](https://github.com/MotziKceb/strict-switch/blob/main/PRIVACY.md).
           NOTES
           gh release create "$TAG" strict-switch-*.zip --target "$GITHUB_SHA" --title "Strict Switch $TAG" --notes-file notes.md
