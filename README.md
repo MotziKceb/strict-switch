@@ -126,9 +126,25 @@ Unlike Edge, Strict also blocks a company's trackers on its own sites, such as G
 - Caught trackers and the activity log are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.
 - Permissions: `declarativeNetRequest` to block, `declarativeNetRequestFeedback` to see which rules matched (for the Trackers page and popup), `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the periodic recount. The extension can't read page contents.
 
+## How this was built
+
+Strict Switch was designed, directed and tested by its maintainer, and the code was written with an AI coding assistant (Claude, by Anthropic). The commit history says so: commits written with it carry a `Co-Authored-By: Claude` line.
+
+What that means in practice:
+
+- **The decisions are human.** Strict by default, no network access, broad permissions only ever opt-in, facts over opinions, and the four principles in [ROADMAP.md](ROADMAP.md) were the maintainer's calls, often overruling the assistant's suggestions.
+- **It was tested in real browsers.** Many fixes came from the maintainer's everyday browsing and activity log reports: Block not applying on a company's own sites, Balanced letting ad trackers through, browser-specific wording, and more.
+- **It's checked automatically.** The test suite (`tests/`) runs real blocking in Chromium at every level, the popup, the log and reports, and pins the extension's exact permissions and its no-network policy. It runs on every change, and a release can't be published if it fails.
+- **The extension itself contains no AI** and talks to no AI service, or any other server.
+
+Everything is open for review. If you can read JavaScript, a human code review is very welcome: open an issue with what you find.
+
 ## Development
 
 For people working on Strict Switch itself, from a checkout of this repository (Node.js 18 or newer):
+
+- **Install the tools:** `npm install`, then `npx playwright install chromium` for the browser the tests use. The extension itself has no dependencies; these are for development only.
+- **Run the tests:** `npm test` (about 30 seconds). Rules and logic are checked directly; blocking and the interface are checked in headless Chromium with the extension loaded, against a local test server that plays every site.
 
 - **Load it:** turn on Developer mode on your browser's extensions page, click **Load unpacked** and pick the repository folder. The activity log shows full addresses when loaded this way.
 - **Rebuild the tracker list** from the latest Disconnect data: `node tools/build-rules.mjs`, then reload the extension. Behind a proxy, prefix the command with `NODE_USE_ENV_PROXY=1`. To build from local copies of Disconnect's files: `node tools/build-rules.mjs --services services.json --entities entities.json`.

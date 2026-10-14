@@ -1,2 +1,5 @@
 # Written by the browser when loading the unpacked extension
 _metadata/
+
+# Development dependencies
+node_modules/

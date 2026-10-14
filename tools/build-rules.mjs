@@ -39,7 +39,13 @@ async function load(file, fallbackName) {
 // Rule priorities. Block rules beat the observe rules, which let a request
 // through but get it reported, so permitted trackers show up in the log.
 // The extension's dynamic rules (lib/core.js) sit above these.
-const BLOCK_PRIORITY = 3;
+//
+// A domain can be in several categories (connect.facebook.net is Social and
+// Fingerprinting) and the browser reports only the winning rule, so the
+// categories that explain what breaks win ties: Tracking content, then
+// Social. Either way the request is blocked.
+const BLOCK_PRIORITY = { content: 5, social: 4 };
+const DEFAULT_BLOCK_PRIORITY = 3;
 const SAME_COMPANY_PRIORITY = 2;
 const CATEGORY_OFF_PRIORITY = 1;
 
@@ -117,7 +123,7 @@ for (const [id, sourceCategories] of Object.entries(CATEGORIES)) {
     };
     const owned = [...(entityDomains.get(entity) ?? [entity])].sort();
     condition.excludedInitiatorDomains = owned;
-    rules.push({ id: rules.length + 1, priority: BLOCK_PRIORITY, action: { type: 'block' }, condition });
+    rules.push({ id: rules.length + 1, priority: BLOCK_PRIORITY[id] ?? DEFAULT_BLOCK_PRIORITY, action: { type: 'block' }, condition });
     trackerEntities[entity] ??= { owned, trackers: {} };
     trackerEntities[entity].trackers[id] = [...domains].sort();
     domainCount += domains.size;
