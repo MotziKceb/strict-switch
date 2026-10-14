@@ -1,0 +1,29 @@
+Windows Registry Editor Version 5.00
+
+; Removes the Edge policy values that lock the address bar suggestions and
+; writing assistance settings, so you can turn them back on in edge://settings.
+; Double-click to import (requires admin), then fully restart Edge.
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+"LocalProvidersEnabled"=-
+"SearchSuggestEnabled"=-
+"MicrosoftEditorProofingEnabled"=-
+"MicrosoftEditorSynonymsEnabled"=-
+"ComposeInlineEnabled"=-
+"SpellcheckEnabled"=-
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\Recommended]
+"LocalProvidersEnabled"=-
+"SearchSuggestEnabled"=-
+"MicrosoftEditorProofingEnabled"=-
+"MicrosoftEditorSynonymsEnabled"=-
+"ComposeInlineEnabled"=-
+"SpellcheckEnabled"=-
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge]
+"LocalProvidersEnabled"=-
+"SearchSuggestEnabled"=-
+"MicrosoftEditorProofingEnabled"=-
+"MicrosoftEditorSynonymsEnabled"=-
+"ComposeInlineEnabled"=-
+"SpellcheckEnabled"=-
