@@ -4,7 +4,7 @@ import { initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
 
-// In a private window nothing here may change a setting (see lib/incognito.js).
+// Private windows are tinted and say so (see lib/incognito.js).
 await initIncognito();
 const categoryLabels = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
 const entities = await getEntities();

@@ -8,7 +8,7 @@ import { HANDLERS, bannersActive, getBannerSettings } from '../lib/banners.js';
 const $ = (id) => document.getElementById(id);
 
 // Private windows get the tint. The log stays usable: it only reads.
-await initIncognito({ lock: false });
+await initIncognito();
 const privateWindow = await inIncognito();
 // Entries from private windows only show in private windows.
 const visible = (entries) => entries.filter((e) => privateWindow || !e.incognito);

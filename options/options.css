@@ -222,6 +222,16 @@ h3 {
 .tip a { color: var(--accent); }
 .tip-source { font-size: 12px; }
 
+.diag {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .site-name a {
   color: var(--text);
   text-decoration: none;

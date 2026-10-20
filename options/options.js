@@ -2,12 +2,12 @@ import { browser, showBrowserText } from '../lib/browser.js';
 import { ISSUES_URL, PRIVACY_URL } from '../lib/project.js';
 import { HANDLERS, getBannerSettings, hasAccess } from '../lib/banners.js';
 import { isDue, isExpired, readGuard } from '../lib/guard.js';
-import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
-import { extensionDetailsUrl, incognitoAllowed, initIncognito } from '../lib/incognito.js';
+import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel, settingsChanged } from '../lib/core.js';
+import { diagnostics, extensionDetailsUrl, incognitoAllowed, initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
 
-// In a private window nothing here may change a setting (see lib/incognito.js).
+// Private windows are tinted and say so (see lib/incognito.js).
 await initIncognito();
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
 
@@ -224,6 +224,10 @@ $('report-issue').addEventListener('click', (e) => {
 $('open-incognito-allow').addEventListener('click', () => {
   chrome.tabs.create({ url: extensionDetailsUrl() });
 });
+$('diag').addEventListener('toggle', async () => {
+  if ($('diag').open) $('diag-text').textContent = JSON.stringify(await diagnostics(), null, 2);
+});
+$('diag-copy').addEventListener('click', () => navigator.clipboard.writeText($('diag-text').textContent));
 incognitoAllowed().then((allowed) => ($('incognito-off').hidden = allowed));
 
 $('open-edge-settings').addEventListener('click', () => {
@@ -232,7 +236,8 @@ $('open-edge-settings').addEventListener('click', () => {
 
 // Keep in sync with changes made from the popup or the background worker.
 chrome.storage.onChanged.addListener(async (changes, area) => {
-  if (area === 'session') return;
+  // In a private window settings are in session storage, along with the log.
+  if (area === 'session' && !settingsChanged(changes, area)) return;
   settings = await getSettings();
   render();
   renderEngaged();

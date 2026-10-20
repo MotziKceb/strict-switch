@@ -23,6 +23,8 @@ test('the extension asks for exactly these permissions and no site access', () =
   assert.deepEqual([...manifest.optional_permissions].sort(), ['notifications', 'scripting']);
   assert.deepEqual([...manifest.optional_host_permissions].sort(), ['http://*/*', 'https://*/*']);
   assert.equal(manifest.externally_connectable, undefined, 'no messaging channel for other extensions or sites');
+  // A private window runs its own copy, with settings in memory only.
+  assert.equal(manifest.incognito, 'split');
   assert.equal(manifest.web_accessible_resources, undefined, 'web pages can\'t load the extension\'s files');
 });
 

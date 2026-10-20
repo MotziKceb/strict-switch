@@ -228,7 +228,7 @@ const asPrivateWindow = () => {
   chrome.windows.getCurrent = async () => ({ incognito: true });
 };
 
-test('in a private window the popup is tinted, says so and changes nothing', async () => {
+test('in a private window the popup is tinted, says every site starts on Strict, and stays usable', async () => {
   const { page, tabId } = await env.openTab('news.test');
   await matchedAtLeast(tabId, 4);
   const popup = await env.ctx.newPage();
@@ -240,12 +240,42 @@ test('in a private window the popup is tinted, says so and changes nothing', asy
   await popup.goto(env.ext('popup/popup.html'));
   await waitFor(() => popup.isVisible('#incognito-note'), { message: 'the private window note' });
   assert.equal(await popup.evaluate(() => document.body.classList.contains('incognito')), true);
-  assert.match(await popup.textContent('#incognito-note'), /^(Incognito|InPrivate|Private|Private browsing) window\. Settings are read-only here for now/);
-  assert.equal(await popup.isDisabled('[data-level=basic]'), true);
-  assert.equal(await popup.isDisabled('#enabled'), true);
-  assert.equal(await popup.isVisible('#fix'), false);
-  assert.equal(await popup.isDisabled('#open-log'), false, 'links to other pages still work');
+  assert.match(await popup.textContent('#incognito-note'), /^(Incognito|InPrivate|Private|Private browsing) window\. Every site starts on Strict\. Changes you make here stay in this .* window and are forgotten when it closes\.$/);
+  assert.equal(await popup.isDisabled('[data-level=basic]'), false, 'settings can be changed in a private window');
+  assert.equal(await popup.isVisible('#fix'), true);
   await popup.close();
+  await page.close();
+});
+
+test('settings changed in a private window stay in memory and never reach normal settings or sync', async () => {
+  const page = await env.ctx.newPage();
+  await page.addInitScript(() => {
+    Object.defineProperty(chrome.extension, 'inIncognitoContext', { get: () => true });
+  });
+  await page.goto(env.ext('options/options.html'));
+  const settings = await page.evaluate(async () => {
+    const core = await import(chrome.runtime.getURL('lib/core.js'));
+    const before = await core.getSettings();
+    await core.setSiteLevel('private.test', 'basic');
+    return { before: before.siteLevels, after: (await core.getSettings()).siteLevels, area: core.settingsArea() };
+  });
+  assert.equal(settings.area, 'session');
+  assert.deepEqual(settings.before, {}, 'a private window starts with everything on Strict');
+  assert.deepEqual(settings.after, { 'private.test': 'basic' }, 'and can change it');
+  const stored = await env.sw.evaluate(async () => ({
+    sync: Object.keys(await chrome.storage.sync.get(null)),
+    local: JSON.stringify(await chrome.storage.local.get(null)),
+  }));
+  assert.ok(!stored.sync.includes('siteLevels'), 'nothing in sync');
+  assert.ok(!stored.local.includes('private.test'), 'nothing on disk');
+  assert.equal((await env.core('getSettings')).siteLevels['private.test'], undefined, 'normal settings untouched');
+  // The diagnostics box shows what the instance is doing, without values.
+  await page.click('#diag summary');
+  await waitFor(async () => (await page.textContent('#diag-text')).includes('settingsStore'), { message: 'diagnostics' });
+  const diag = JSON.parse(await page.textContent('#diag-text'));
+  assert.equal(diag.settingsStore, 'session');
+  assert.ok(diag.sessionKeys.includes('siteLevels'));
+  assert.ok(!JSON.stringify(diag).includes('private.test'), 'names only, no sites');
   await page.close();
 });
 

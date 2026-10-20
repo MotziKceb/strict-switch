@@ -20,6 +20,7 @@
     "http://*/*",
     "https://*/*"
   ],
+  "incognito": "split",
   "content_security_policy": {
     "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; connect-src 'self'; base-uri 'none'"
   },

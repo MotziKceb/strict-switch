@@ -25,7 +25,7 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 
 ### Private windows
 
-In a private window (InPrivate in Edge, Incognito in Chrome, Private in Brave, Opera and Vivaldi) the popup and settings pages are tinted and say so. For now settings are read-only there, so nothing from private browsing is saved or synced, and sites visited privately are kept out of the Trackers page. The activity log shows private entries only in private windows and forgets them when the last one closes. Browsers only run extensions in private windows if you allow it for each extension; the settings page tells you if you haven't.
+A private window (InPrivate in Edge, Incognito in Chrome, Private in Brave, Opera and Vivaldi) gets its own copy of Strict Switch. It starts with every site on Strict, whatever you've set in normal windows, and you can change anything there: the changes live in memory only, never reach your normal settings or sync, and are forgotten when the window closes. The popup and settings pages are tinted and say so. Cookie banner handling isn't available in private windows yet. Browsers only run extensions in private windows if you allow it for each extension; the settings page tells you if you haven't. *This is a prototype: the settings page has a "Details for testing private windows" box that shows what each copy is doing.*
 
 ### Might break the page
 

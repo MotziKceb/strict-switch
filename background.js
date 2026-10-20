@@ -1,4 +1,4 @@
-import { CATEGORIES, LEVELS, applyRules, getEngaged, getSettings } from './lib/core.js';
+import { CATEGORIES, LEVELS, applyRules, getEngaged, getSettings, inPrivateWindow, settingsChanged } from './lib/core.js';
 import { companyFor, refreshEngaged } from './lib/engagement.js';
 import { forgetPrivateEntries, logEvent, recordMatch } from './lib/activity.js';
 import { checkGuard, onContentMessage, watchAccess } from './lib/autoreject.js';
@@ -12,23 +12,31 @@ async function init() {
   // Show the number of blocked requests on the toolbar icon, per tab.
   await chrome.declarativeNetRequest.setExtensionActionOptions({ displayActionCountAsBadgeText: true });
   await chrome.action.setBadgeBackgroundColor({ color: '#3a5a8c' });
-  // Recount hourly so companies you stop visiting drop off.
-  await chrome.alarms.create('refresh-engaged', { periodInMinutes: 60 });
   if (!liveMatches) await chrome.alarms.create('collect-matches', { periodInMinutes: 1 });
-  // Cookie banners: hand access back when the lease ends, remind when due.
-  await chrome.alarms.create('banners-guard', { periodInMinutes: 15 });
-  await checkGuard().catch(() => {});
-  await refreshEngaged();
+  // A private window's instance starts from empty settings (everything Strict)
+  // and leaves the rest to the normal instance: the visit counts for Balanced
+  // come from browsing history, and cookie banner access has its own lease.
+  if (!inPrivateWindow()) {
+    // Recount hourly so companies you stop visiting drop off.
+    await chrome.alarms.create('refresh-engaged', { periodInMinutes: 60 });
+    // Cookie banners: hand access back when the lease ends, remind when due.
+    await chrome.alarms.create('banners-guard', { periodInMinutes: 15 });
+    await checkGuard().catch(() => {});
+    await refreshEngaged();
+  }
   // Enabled rulesets reset to the manifest defaults on update, so reapply.
   await applyRules(await getSettings());
 }
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   await init();
-  if (reason === 'install') chrome.runtime.openOptionsPage();
+  if (reason === 'install' && !inPrivateWindow()) chrome.runtime.openOptionsPage();
 });
 
 chrome.runtime.onStartup.addListener(init);
+// A private window's instance may not get install or startup events, and
+// must not sit without its rules: set up as soon as it runs.
+if (inPrivateWindow()) init();
 
 chrome.alarms.onAlarm.addListener(({ name }) => {
   if (name === 'refresh-engaged') refreshAndApply();
@@ -67,6 +75,7 @@ async function collectMatches() {
 
 // A visit to a tracker company's site might push it over the threshold.
 chrome.history.onVisited.addListener(async ({ url }) => {
+  if (inPrivateWindow()) return;
   let host;
   try {
     host = new URL(url).hostname;
@@ -78,13 +87,13 @@ chrome.history.onVisited.addListener(async ({ url }) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync') {
+  if (settingsChanged(changes, area)) {
     // Settings changed here or synced from another device.
     if (Object.keys(changes).some((k) => !k.startsWith('banner'))) getSettings().then(applyRules);
     if (changes.bannerHandler) checkGuard();
     logSettingsChanges(changes);
   }
-  if (area === 'local' && changes.engaged) {
+  if (area === 'local' && changes.engaged && !inPrivateWindow()) {
     const { oldValue = [], newValue = [] } = changes.engaged;
     const added = newValue.filter((c) => !oldValue.includes(c));
     const removed = oldValue.filter((c) => !newValue.includes(c));
