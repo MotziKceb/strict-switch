@@ -2,7 +2,7 @@
 
 Strict Switch is a Chromium (Manifest V3) tracker-blocking extension. Read `README.md`, `ROADMAP.md` (especially "Ground rules"), `PRIVACY.md` and `tests/` before changing behaviour.
 
-**Start with `HANDOFF.md`:** project state, file and storage maps, the cookie banner invariants, how it was built and tested, the decisions log and open questions. Keep it up to date when any of those change.
+**If a `HANDOFF.md` exists in the repo folder, read it first.** It is the maintainer's private working notes (project state, maps, how it was built and tested, decisions, open items). It is deliberately NOT in git (it is in `.gitignore`): never commit it, and never copy its contents into public files, commit messages or PRs. Keep it up to date locally when those things change.
 
 ## Writing
 
@@ -35,6 +35,7 @@ Every feature is weighed against these (see `ROADMAP.md`):
 
 - Bump `version` in `manifest.json` and merge to `main`. The Release workflow runs the tests, then packages and publishes a GitHub release for any version not yet released.
 - Commits written with Claude carry a `Co-Authored-By: Claude ...` trailer (see "How this was built" in `README.md`).
+- `main` is protected: work on a `cu-dev/<topic>` branch and open a pull request; never push to `main`. Do not add `Claude-Session:` links to commits or PRs.
 
 ## Test builds
 
