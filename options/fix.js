@@ -22,12 +22,34 @@ const tabId = params.has('tab') ? Number(params.get('tab')) : null;
 // Trackers to try one by one before the bigger steps.
 const MAX_TRACKER_STEPS = 5;
 
+// Cloudflare's "verify you are human" check loads from cloudflare.com, which
+// the tracker list files under Tracking content. When that was blocked on
+// this page, it's the likeliest reason a check never finishes, so it goes
+// first. Cloudflare's visitor statistics (Analytics) are never needed, and
+// don't count. Matched by the company's exact name: cdn1cloudflare.xyz is a
+// different, unrelated entry.
+const CLOUDFLARE = 'Cloudflare';
+
 async function buildSteps() {
   const settings = await getSettings();
   const steps = [];
   const level = siteLevel(site, settings.siteLevels);
   // A level set on a parent domain is changed there, not here.
   const ownLevel = !level.site || level.site === site;
+  const groups = tabId !== null && level.level !== 'basic' ? await pageGroups(tabId, site, settings) : [];
+
+  if (groups.some((g) => g.company === CLOUDFLARE && g.category === 'content' && g.group === 'blocked' && !g.siteAllowed)) {
+    steps.push({
+      title: 'Allow Cloudflare\'s checks on this site',
+      what: 'Many sites use Cloudflare to check that you\'re human ("Verify you are human"). Strict Switch blocked something from Cloudflare on this page, which can stop that check from finishing.',
+      tradeoff: 'Cloudflare can see that you visited this site, and it serves a large share of the web. Its visitor statistics stay blocked.',
+      moreTitle: 'More about what this allows',
+      moreText: 'This allows Cloudflare\'s content on this site only: the human check, code libraries many sites load from Cloudflare, and Cloudflare-hosted video. Strict Switch can\'t tell which of these your page needed, so it lets all of them through here. Nothing changes on other sites.',
+      apply: () => setSiteAllow(site, CLOUDFLARE, 'content', true),
+      undo: () => setSiteAllow(site, CLOUDFLARE, 'content', false),
+      fixed: `Cloudflare's content is now allowed on ${site}, and only there. Everything else stays blocked.`,
+    });
+  }
 
   if (level.level === 'lockdown' && ownLevel) {
     steps.push({
@@ -41,7 +63,11 @@ async function buildSteps() {
   }
 
   if (tabId !== null && level.level !== 'basic') {
-    const suspects = breakageList(await pageGroups(tabId, site, settings)).filter((g) => !g.siteAllowed).slice(0, MAX_TRACKER_STEPS);
+    // Cloudflare's content has its own step above, if it was blocked.
+    const cloudflareDone = steps.some((s) => s.title.startsWith('Allow Cloudflare'));
+    const suspects = breakageList(groups)
+      .filter((g) => !g.siteAllowed && !(cloudflareDone && g.company === CLOUDFLARE && g.category === 'content'))
+      .slice(0, MAX_TRACKER_STEPS);
     for (const { company, category } of suspects) {
       steps.push({
         title: `Allow ${company} (${categoryLabel(category)}) on this site`,

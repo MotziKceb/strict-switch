@@ -21,7 +21,7 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 
 ### Page seems broken?
 
-**Page seems broken?** in the popup (and in Site settings) opens a step-by-step guide for that site. It tries one change at a time, most likely first: allowing the blocked trackers most likely to break the page, then turning off cookie banner auto-reject if it's on, then Balanced, then Basic. After each step it reloads the page and asks whether it works now. Each step says in a line what allowing it means (for example "lets Meta see that you visited this site"), with **More about** for a longer explanation. Anything that didn't help is put back, and every change is in the activity log. If even Basic doesn't help, Strict Switch probably isn't the cause, and the guide says so.
+**Page seems broken?** in the popup (and in Site settings) opens a step-by-step guide for that site. It tries one change at a time, most likely first: if Cloudflare's content was blocked on the page (where its "Verify you are human" check lives), allowing that comes first; then the other blocked trackers most likely to break the page, then turning off cookie banner auto-reject if it's on, then Balanced, then Basic. After each step it reloads the page and asks whether it works now. Each step says in a line what allowing it means (for example "lets Meta see that you visited this site"), with **More about** for a longer explanation. Anything that didn't help is put back, and every change is in the activity log. If even Basic doesn't help, Strict Switch probably isn't the cause, and the guide says so.
 
 ### Private windows
 

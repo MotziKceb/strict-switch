@@ -19,6 +19,9 @@ before(async () => {
         for (let i = 0; i < 300; i++) new Image().src = 'http://rr1.googlevideo.com:${port}/videoplayback/' + i;
       </script>`;
     }
+    // Cloudflare's human check, its visitor statistics, and a lookalike.
+    if (host === 'cf.test') return requests(['challenges.cloudflare.com', 'static.cloudflareinsights.com'], port);
+    if (host === 'cfstats.test') return requests(['static.cloudflareinsights.com', 'cdn1cloudflare.xyz'], port);
     return requests(TRACKERS, port);
   });
   env = await launch(site);
@@ -87,6 +90,36 @@ test('"Page seems broken?" tries one thing at a time and puts back what didn\'t 
   assert.ok(events.includes('Allowed Meta social on news.test'));
   await guide.close();
   await page.close();
+});
+
+test('the guide puts a blocked Cloudflare check first, and ignores Cloudflare\'s statistics and lookalikes', async () => {
+  // Tracking content (where the human check lives) is off by default.
+  await env.core('setSiteCategory', 'cf.test', 'content', true);
+  const { page, tabId } = await env.openTab('cf.test');
+  await matchedAtLeast(tabId, 2);
+  const guide = await env.ctx.newPage();
+  await guide.goto(env.ext(`options/fix.html?site=cf.test&tab=${tabId}`));
+  await waitFor(async () => (await guide.textContent('#step-title')) === 'Allow Cloudflare\'s checks on this site', { message: 'Cloudflare first' });
+  assert.match(await guide.textContent('#step-count'), /^Step 1 of 3$/, 'Cloudflare, then Balanced, then Basic: not listed twice');
+  assert.match(await guide.textContent('#step-what'), /Verify you are human/);
+  await guide.click('#apply');
+  await waitFor(() => guide.isVisible('#ask-actions'), { message: 'the question' });
+  assert.deepEqual((await env.core('getSettings')).siteAllows['cf.test'], ['Cloudflare:content']);
+  await guide.click('#yes');
+  await waitFor(() => guide.isVisible('#fixed'), { message: 'fixed' });
+  await guide.close();
+  await page.close();
+
+  // Only the statistics beacon and the lookalike are blocked: no Cloudflare step.
+  await env.core('setSiteCategory', 'cfstats.test', 'content', true);
+  const other = await env.openTab('cfstats.test');
+  await matchedAtLeast(other.tabId, 2);
+  const second = await env.ctx.newPage();
+  await second.goto(env.ext(`options/fix.html?site=cfstats.test&tab=${other.tabId}`));
+  await waitFor(async () => (await second.textContent('#step-title')).length > 0, { message: 'first step' });
+  assert.ok(!(await second.textContent('#step-title')).includes('Cloudflare'), 'statistics and lookalikes are not the human check');
+  await second.close();
+  await other.page.close();
 });
 
 test('Ctrl+click on Strict switches the site to Lockdown', async () => {
