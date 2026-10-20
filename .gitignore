@@ -6,3 +6,6 @@ node_modules/
 
 # Test builds
 *.zip
+
+# The maintainer's private working notes for Claude. Never commit.
+HANDOFF.md

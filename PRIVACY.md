@@ -6,7 +6,13 @@
 
 ## Strict Switch can't contact the internet
 
-The extension's manifest (`manifest.json`) contains a content security policy that stops its pages and its background worker from connecting to any server. Only the extension's own files can be loaded. Anyone can check this; it's one line, and the automated tests fail if it's ever removed.
+The extension's manifest (`manifest.json`) contains a content security policy that stops its pages and its background worker from connecting to any server. Only the extension's own files can be loaded. Anyone can check this: it's the `extension_pages` setting inside `content_security_policy`, which reads:
+
+```
+default-src 'self'; script-src 'self'; object-src 'none'; connect-src 'self'; base-uri 'none'
+```
+
+`connect-src 'self'` is the part that stops requests to any server. The automated tests fail if it, or `default-src 'self'`, is ever removed (`tests/rules.test.js`), and a browser test checks that a real request from an extension page and from the background worker is refused (`tests/interface.test.js`).
 
 If you switch on cookie banner handling, Strict Switch also adds scripts to the pages you visit. That policy doesn't cover scripts inside web pages, so they're written without any way to reach the network, and the automated tests fail if one ever uses a network function.
 
