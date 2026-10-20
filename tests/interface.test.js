@@ -50,6 +50,45 @@ test('popup sums up the page and offers fixes for what might break it', async ()
   await page.close();
 });
 
+test('"Page seems broken?" tries one thing at a time and puts back what didn\'t help', async () => {
+  const { page, tabId } = await env.openTab('news.test');
+  await matchedAtLeast(tabId, 4);
+  const popup = await env.popup(tabId, 'news.test');
+  await popup.evaluate(() => {
+    window.openedUrls = [];
+    chrome.tabs.create = async ({ url }) => window.openedUrls.push(url);
+  });
+  await popup.click('#fix');
+  const [url] = await popup.evaluate(() => window.openedUrls);
+  assert.equal(url, env.ext(`options/fix.html?site=news.test&tab=${tabId}`));
+  await popup.close();
+
+  const guide = await env.ctx.newPage();
+  await guide.goto(url);
+  // Social on a third-party site is the likeliest culprit; ads aren't tried.
+  await waitFor(async () => (await guide.textContent('#step-title')) === 'Allow Meta (Social) on this site', { message: 'first step' });
+  assert.match(await guide.textContent('#step-tradeoff'), /^If it helps: Allowing it lets Meta see that you visited this site/);
+  assert.match(await guide.textContent('#step-count'), /^Step 1 of 3$/, 'Meta, then Balanced, then Basic');
+  await guide.click('#apply');
+  await waitFor(() => guide.isVisible('#ask-actions'), { message: 'the question' });
+  assert.deepEqual((await env.core('getSettings')).siteAllows['news.test'], ['Meta:social']);
+  await guide.click('#no');
+  await waitFor(async () => (await guide.textContent('#step-title')) === 'Set this site to Balanced', { message: 'next step' });
+  assert.equal((await env.core('getSettings')).siteAllows['news.test'], undefined, 'put back');
+  await guide.click('#apply');
+  await waitFor(() => guide.isVisible('#ask-actions'), { message: 'the question' });
+  await guide.click('#yes');
+  await waitFor(() => guide.isVisible('#fixed'), { message: 'fixed' });
+  assert.equal((await env.core('getSettings')).siteLevels['news.test'], 'balanced', 'the fix is kept');
+  const events = await waitFor(async () => {
+    const e = (await env.log()).filter((x) => x.kind === 'event').map((x) => x.text);
+    return e.includes('Site news.test set to Balanced') && e;
+  }, { message: 'logged' });
+  assert.ok(events.includes('Allowed Meta social on news.test'));
+  await guide.close();
+  await page.close();
+});
+
 test('Ctrl+click on Strict switches the site to Lockdown', async () => {
   const { page, tabId } = await env.openTab('news.test');
   const popup = await env.popup(tabId, 'news.test');

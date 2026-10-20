@@ -19,6 +19,10 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 
 **Site settings**, next to the site name in the popup, opens one page for everything about that site: its level, its own tracker category switches (for example Advertising off or Tracking content on for just this site, each marked "changed for this site" with a way back to the global setting), the trackers you've allowed there, and what's blocked on the open page. A site's own settings beat global ones and company rules, but not Lockdown or Basic.
 
+### Page seems broken?
+
+**Page seems broken?** in the popup (and in Site settings) opens a step-by-step guide for that site. It tries one change at a time, most likely first: allowing the blocked trackers most likely to break the page, then turning off cookie banner auto-reject if it's on, then Balanced, then Basic. After each step it reloads the page and asks whether it works now. Each step says in a line what allowing it means (for example "lets Meta see that you visited this site"), with **More about** for a longer explanation. Anything that didn't help is put back, and every change is in the activity log. If even Basic doesn't help, Strict Switch probably isn't the cause, and the guide says so.
+
 ### Might break the page
 
 The popup lists the blocked trackers most likely to break the current page: Tracking content (videos, images, fonts, page code) and trackers on their owner's own site first, then Social (logins, comments, embedded posts). Each is grouped by company and category with a toggle that allows it **on that site only**; flip what you need and click **Reload page to apply**. The popup shows the top four; **and N more** opens a page with the full list in the same order. Per-site exceptions are listed, and can be removed, in settings.

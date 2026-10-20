@@ -89,3 +89,5 @@
 }
 
 #banner-note a { color: var(--accent); }
+
+.fix-link { color: var(--accent); font-weight: 600; }

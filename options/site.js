@@ -113,6 +113,8 @@ function renderExceptions() {
   $('clear').hidden = !pairs.length;
 }
 
+$('fix-link').href = `fix.html?site=${encodeURIComponent(site)}${tabId !== null ? `&tab=${tabId}` : ''}`;
+
 async function renderBanners() {
   const [active, { handler, sitesOff }] = await Promise.all([bannersActive(), getBannerSettings()]);
   const owner = bannerSiteOff(site, sitesOff);

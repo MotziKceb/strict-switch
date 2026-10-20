@@ -65,7 +65,8 @@ Cookie banners' "Reject all" is often not respected. Studies (for example Matte,
 An optional layer under the existing UI: the popup stays simple; clicking a company opens an "About" card; a "Why this matters" section goes deeper.
 
 - [x] **First explainer:** "Do Not Track: on or off?" in settings (0.7.1).
-- [ ] **Category explainers** written once, in plain language: what advertising, analytics, social, fingerprinting, cryptomining and tracking content requests do.
+- [x] **"Page seems broken?" guide** (0.9): tries the likeliest culprits one at a time, says in a line what allowing each means, and puts back what didn't help.
+- [ ] **Category explainers** written once, in plain language (*started in 0.9*: short and longer explainers in `lib/explain.js`, used by the guide): what advertising, analytics, social, fingerprinting, cryptomining and tracking content requests do.
 - [ ] **Company cards** built from public data at release time:
   - What the company **declares** it uses data for (IAB Global Vendor List purposes: profiling for personalised ads, precise location, device linking...).
   - Whether it is a **registered data broker** (California and Vermont registries).

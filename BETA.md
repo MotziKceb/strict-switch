@@ -42,7 +42,7 @@ Open a news site (they're full of trackers) and click the Strict Switch icon.
 
 Just browse as usual. Along the way, try these when they come up naturally:
 
-- [ ] **A site breaks.** Something doesn't load, a login button does nothing, comments are missing. Try the "might break the page" switches first, then Balanced, then Basic. Note what fixed it.
+- [ ] **A site breaks.** Something doesn't load, a login button does nothing, comments are missing. Click **Page seems broken?** in the popup and follow the steps. Note what fixed it.
 - [ ] **A login with Google, Facebook or Apple.**
 - [ ] **A video site and a shop**, including a checkout page if you're buying something anyway.
 - [ ] **Lockdown** on a site you don't trust much (Ctrl+click Strict).

@@ -188,6 +188,7 @@ for (const button of levelButtons) {
   });
 }
 
+$('fix').addEventListener('click', () => openPage('options/fix.html', { site, tab: tab.id }));
 $('break-more').addEventListener('click', () => openPage('options/site.html', { site, tab: tab.id }));
 $('site-settings').addEventListener('click', () => openPage('options/site.html', { site, tab: tab.id }));
 

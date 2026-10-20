@@ -244,3 +244,10 @@ footer {
   margin: 10px 2px 0;
   font-size: 12px;
 }
+
+.fix-link {
+  display: block;
+  margin: 8px 2px 0;
+  font-size: 12px;
+  font-weight: 600;
+}

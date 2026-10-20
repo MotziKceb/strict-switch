@@ -2,6 +2,8 @@
 
 Strict Switch is a Chromium (Manifest V3) tracker-blocking extension. Read `README.md`, `ROADMAP.md` (especially "Ground rules"), `PRIVACY.md` and `tests/` before changing behaviour.
 
+**Start with `HANDOFF.md`:** project state, file and storage maps, the cookie banner invariants, how it was built and tested, the decisions log and open questions. Keep it up to date when any of those change.
+
 ## Writing
 
 - **Never use em dashes.** Use " - " (space, hyphen, space) instead. This applies everywhere: code comments, UI text, docs, commit messages and PR descriptions.

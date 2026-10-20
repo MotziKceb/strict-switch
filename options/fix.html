@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strict Switch: page seems broken?</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="trackers.css">
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="fix.css">
+</head>
+<body>
+  <main>
+    <nav class="crumbs"><a class="back" href="options.html">Settings</a><a id="site-link" href="#">Site settings</a></nav>
+    <p class="eyebrow">Page seems broken?</p>
+    <h1 id="title">Let's find what's in the way</h1>
+    <p class="muted" id="intro">Strict Switch will try one thing at a time, most likely first. After each, look at the page and say whether it works. Anything that doesn't help is put back.</p>
+
+    <section class="step" id="step" hidden>
+      <p class="step-count muted" id="step-count"></p>
+      <h2 id="step-title"></h2>
+      <p id="step-what"></p>
+      <p class="tradeoff" id="step-tradeoff"></p>
+      <details class="tip" id="step-more" hidden>
+        <summary id="step-more-title">More about this</summary>
+        <p id="step-more-text"></p>
+      </details>
+      <div class="actions" id="try-actions">
+        <button type="button" class="button" id="apply">Try it and reload the page</button>
+        <button type="button" class="remove" id="skip">Skip</button>
+      </div>
+      <div class="actions" id="ask-actions" hidden>
+        <strong>Does the page work now?</strong>
+        <button type="button" class="button" id="yes">Yes, it works</button>
+        <button type="button" class="remove" id="no">No, put it back and try the next</button>
+      </div>
+      <p class="error" id="tab-gone" hidden>That tab is closed. Open the site again in a tab to check it.</p>
+    </section>
+
+    <section class="result" id="fixed" hidden>
+      <h2>Fixed</h2>
+      <p id="fixed-text"></p>
+      <p class="muted">You can change it any time in <a id="fixed-site-link" href="#">Site settings</a>, and every change is in the activity log.</p>
+      <button type="button" class="remove" id="undo">Undo this change</button>
+    </section>
+
+    <section class="result" id="not-us" hidden>
+      <h2>Strict Switch probably isn't the cause</h2>
+      <p id="not-us-text"></p>
+      <p><button type="button" class="button" id="report">Open the log to report it</button> <span class="muted">if you think it is Strict Switch. The log's "Report a problem" button copies a report for you.</span></p>
+    </section>
+  </main>
+  <script type="module" src="fix.js"></script>
+</body>
+</html>
