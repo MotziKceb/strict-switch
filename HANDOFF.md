@@ -1,6 +1,6 @@
 # HANDOFF: Strict Switch, for Claude
 
-Audience: any Claude instance (local Claude Code or remote) picking up this repository. Dense on purpose; not written for human reading. Read together with `CLAUDE.md` (conventions, always loaded) and the docs it points to. Last updated 2026-10-20, at version 0.9.0.
+Audience: any Claude instance (local Claude Code or remote) picking up this repository. Dense on purpose; not written for human reading. Read together with `CLAUDE.md` (conventions, always loaded) and the docs it points to. Last updated 2026-10-20. v0.9.0 is released (it still has the read-only private windows stopgap); 0.9.1 (PR #4) brings private windows with their own settings, the Vivaldi profile and the Strict-keep fix.
 
 ## 0. Hard rules (summary; CLAUDE.md is authoritative)
 
@@ -23,7 +23,7 @@ Chromium MV3 tracker blocker. Disconnect list compiled into static declarativeNe
 ## 2. Repository state
 
 - GitHub: `MotziKceb/strict-switch`. Default branch `main`. v0.8.1 released from `main` (first release).
-- 0.9.0 work: branch `cu-dev/tender-keller-t41lgu`, PR MotziKceb/strict-switch#3 (marked ready for review 2026-10-20). Merging to `main` publishes v0.9.0 automatically (Release workflow, because `manifest.json` version is new).
+- 0.9.0: PR #3, merged 2026-10-20 (merge commit), released as v0.9.0. 0.9.1: branch `cu-dev/private-own-settings`, PR MotziKceb/strict-switch#4; merging to `main` publishes v0.9.1 automatically (Release workflow, because `manifest.json` version is new). Branch rules on `main` (maintainer, 2026-10-20): PR required, 0 approvals, required check `test` from GitHub Actions, squash merges only, linear history, signed commits, no force pushes or deletions, Claude app may bypass for pull requests only. Never push to `main`; work on cu-dev/... branches.
 - The maintainer has been running 0.9 test builds daily in Microsoft Edge 155 on Windows for about a week; reports "works really well".
 
 ## 3. File map

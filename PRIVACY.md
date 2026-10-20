@@ -1,6 +1,6 @@
 # Strict Switch privacy policy
 
-*Last updated: 14 October 2026. Applies to Strict Switch 0.9 and later.*
+*Last updated: 20 October 2026. Applies to Strict Switch 0.9 and later; the private window settings described below are from 0.9.1.*
 
 **The short version:** Strict Switch collects nothing and sends nothing. It has no servers, no analytics and no accounts. Everything it knows stays in your browser, and you can see and delete it.
 
