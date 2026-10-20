@@ -10,8 +10,12 @@ import {
   REMIND_DAYS, SNOOZE_CHOICES, clearGuard, isDue, isExpired, keep, readGuard, snooze, startLease,
 } from '../lib/guard.js';
 import { REPO_URL } from '../lib/project.js';
+import { initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
+
+// In a private window nothing here may change a setting (see lib/incognito.js).
+await initIncognito();
 const dateText = (t) => new Date(t).toLocaleDateString(undefined, { dateStyle: 'long' });
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 

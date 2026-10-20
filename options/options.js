@@ -3,8 +3,12 @@ import { ISSUES_URL, PRIVACY_URL } from '../lib/project.js';
 import { HANDLERS, getBannerSettings, hasAccess } from '../lib/banners.js';
 import { isDue, isExpired, readGuard } from '../lib/guard.js';
 import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { extensionDetailsUrl, incognitoAllowed, initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
+
+// In a private window nothing here may change a setting (see lib/incognito.js).
+await initIncognito();
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
 
 let settings = await getSettings();
@@ -216,6 +220,11 @@ $('report-issue').addEventListener('click', (e) => {
   e.preventDefault();
   chrome.tabs.create({ url: ISSUES_URL });
 });
+
+$('open-incognito-allow').addEventListener('click', () => {
+  chrome.tabs.create({ url: extensionDetailsUrl() });
+});
+incognitoAllowed().then((allowed) => ($('incognito-off').hidden = allowed));
 
 $('open-edge-settings').addEventListener('click', () => {
   chrome.tabs.create({ url: browser.settingsUrl });

@@ -40,6 +40,7 @@ lib/project.js           repo/issue URLs (links only)
 lib/explain.js           (0.9) plain-language category explainers: ALLOW_MEANS (one line), CATEGORY_DETAILS (longer)
 lib/banners.js           (0.9) cookie banner settings (sync: bannerHandler, bannerSitesOff), ACCESS constants, hasAccess/bannersActive,
                          revokeAccess, syncContentScripts (lock 'banner-scripts'), showReminderBadge, platformLabel
+lib/incognito.js         (0.9) private window detection (window.incognito), tint + watermark + read-only lock (initIncognito), allowed-in-private check
 lib/guard.js             (0.9) lease + reminder in extension IndexedDB 'strict-switch-guard'/'guard'/'banners'; normalize/clamp; writes
                          only from options/banners.html on a trusted click
 lib/consent-record.js    (0.9) readConsentRecord (self-contained, injected into page MAIN world), sanitizeRecord, recordSignature,
@@ -144,7 +145,9 @@ Upstream package note: the npm package `@duckduckgo/autoconsent` ships its own C
 
 ## 9. Open questions for the maintainer
 
-- Incognito: banner and tracker log entries from incognito windows land in the session log (kept until the whole browser closes). Offered to exclude incognito from the log; no answer yet.
+- Incognito, agreed direction (maintainer, 2026-10-20): any change made in a private window must stay in that private window (nothing persisted, nothing synced); a temporary on-disk file while the private window runs is fine if nothing remains after it closes; blocking takes priority over logging. Default for private windows should be Strict for every site (fresh start), because users may expect anonymity and a page that breaks is fixable with the guide while silent tracking is not. Planned: global setting "In private windows, start from my normal settings" (off by default); per-site "Use these settings in private windows"; a user-clicked "use these rules in normal browsing"; log reason "InPrivate: starts on Strict". Open: whether a fresh private start keeps tightening/general settings (category switches, companies set to Block, block-on-own-sites) and drops loosening ones (per-site levels/exceptions, company Allow): proposed yes, awaiting answer.
+- Approach to prototype on its own branch: a separate private-window instance (manifest `incognito: "split"`) vs rules scoped to private tabs. Unverified, needs a real browser: is split storage separate and removed when the last private window closes; can the private instance read normal settings; can it write to them on an explicit click. Headless Playwright can't test private windows with the extension; the maintainer tests in InPrivate and checks the profile folder afterwards.
+- Built so far (stopgap in 0.9.0): detection, tint/watermark/note, controls disabled in private windows, no site names from private windows in the Trackers page list, private log entries tagged, shown only in private windows and dropped when the last private window closes, and a notice when the extension is not allowed in private windows. Behaviour in private windows is otherwise the same as normal (shared settings).
 
 ## 10. Maintainer's longer-term ideas (context only: DO NOT build unless explicitly asked)
 

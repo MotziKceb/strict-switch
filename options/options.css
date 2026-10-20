@@ -28,7 +28,8 @@ section {
   margin-top: 28px;
 }
 
-.callout {
+.callout,
+.incognito-off {
   padding: 14px 16px;
   border-radius: 10px;
   background: var(--surface);
@@ -232,3 +233,5 @@ h3 {
 /* Cookie banners sits right under the browser panel, as its own panel. */
 .banners-callout { margin-top: 12px; }
 .banners-callout p:last-child { margin-bottom: 0; }
+
+.incognito-off { margin-bottom: 12px; }

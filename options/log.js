@@ -1,15 +1,22 @@
 import { CATEGORIES, LEVELS, dynamicRuleKind, getEngaged, getSettings, reasonFor } from '../lib/core.js';
 import { clearLog, getLog } from '../lib/activity.js';
 import { brokenSiteIssueUrl } from '../lib/project.js';
+import { initIncognito, inIncognito } from '../lib/incognito.js';
 import { VERDICTS } from '../lib/consent-record.js';
 import { HANDLERS, bannersActive, getBannerSettings } from '../lib/banners.js';
 
 const $ = (id) => document.getElementById(id);
+
+// Private windows get the tint. The log stays usable: it only reads.
+await initIncognito({ lock: false });
+const privateWindow = await inIncognito();
+// Entries from private windows only show in private windows.
+const visible = (entries) => entries.filter((e) => privateWindow || !e.incognito);
 const categoryLabels = Object.fromEntries(CATEGORIES.map((c) => [c.id, c.label]));
 const MAX_SHOWN = 1000;
 const MAX_REPORT = 500;
 
-let log = await getLog();
+let log = visible(await getLog());
 let filter = 'trackers';
 $('search').value = new URLSearchParams(location.search).get('q') ?? '';
 
@@ -247,7 +254,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'session' || !changes.log) return;
   clearTimeout(refreshTimer);
   refreshTimer = setTimeout(async () => {
-    log = await getLog();
+    log = visible(await getLog());
     render();
   }, 300);
 });

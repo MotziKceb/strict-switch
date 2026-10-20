@@ -8,8 +8,12 @@ import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '
 import {
   CATEGORIES, LEVELS, clearSiteAllows, getSettings, setSiteAllow, setSiteCategory, setSiteLevel, siteCategoryOverrides, siteLevel,
 } from '../lib/core.js';
+import { initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
+
+// In a private window nothing here may change a setting (see lib/incognito.js).
+await initIncognito();
 const params = new URLSearchParams(location.search);
 const site = params.get('site');
 const tabId = params.has('tab') ? Number(params.get('tab')) : null;

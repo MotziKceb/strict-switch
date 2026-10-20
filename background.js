@@ -1,6 +1,6 @@
 import { CATEGORIES, LEVELS, applyRules, getEngaged, getSettings } from './lib/core.js';
 import { companyFor, refreshEngaged } from './lib/engagement.js';
-import { logEvent, recordMatch } from './lib/activity.js';
+import { forgetPrivateEntries, logEvent, recordMatch } from './lib/activity.js';
 import { checkGuard, onContentMessage, watchAccess } from './lib/autoreject.js';
 import { HANDLERS } from './lib/banners.js';
 
@@ -42,6 +42,12 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   onContentMessage(message, sender);
 });
 watchAccess();
+
+// When the last private window closes, its log entries go too.
+chrome.windows.onRemoved.addListener(async () => {
+  const windows = await chrome.windows.getAll();
+  if (!windows.some((w) => w.incognito)) forgetPrivateEntries();
+});
 
 // Record caught trackers for the Trackers page. The browser reports each match live
 // for extensions loaded unpacked; otherwise poll the recent matches.

@@ -23,6 +23,10 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 
 **Page seems broken?** in the popup (and in Site settings) opens a step-by-step guide for that site. It tries one change at a time, most likely first: allowing the blocked trackers most likely to break the page, then turning off cookie banner auto-reject if it's on, then Balanced, then Basic. After each step it reloads the page and asks whether it works now. Each step says in a line what allowing it means (for example "lets Meta see that you visited this site"), with **More about** for a longer explanation. Anything that didn't help is put back, and every change is in the activity log. If even Basic doesn't help, Strict Switch probably isn't the cause, and the guide says so.
 
+### Private windows
+
+In a private window (InPrivate in Edge, Incognito in Chrome, Private in Brave, Opera and Vivaldi) the popup and settings pages are tinted and say so. For now settings are read-only there, so nothing from private browsing is saved or synced, and sites visited privately are kept out of the Trackers page. The activity log shows private entries only in private windows and forgets them when the last one closes. Browsers only run extensions in private windows if you allow it for each extension; the settings page tells you if you haven't.
+
 ### Might break the page
 
 The popup lists the blocked trackers most likely to break the current page: Tracking content (videos, images, fonts, page code) and trackers on their owner's own site first, then Social (logins, comments, embedded posts). Each is grouped by company and category with a toggle that allows it **on that site only**; flip what you need and click **Reload page to apply**. The popup shows the top four; **and N more** opens a page with the full list in the same order. Per-site exceptions are listed, and can be removed, in settings.

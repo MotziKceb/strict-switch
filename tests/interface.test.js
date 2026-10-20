@@ -189,6 +189,68 @@ test('cookie banner handling is off until switched on, and asks for nothing at i
   await page.close();
 });
 
+// Private windows: the browser reports them through the window, which the
+// tests fake (the test browser has no private window with the extension in).
+const asPrivateWindow = () => {
+  chrome.windows.getCurrent = async () => ({ incognito: true });
+};
+
+test('in a private window the popup is tinted, says so and changes nothing', async () => {
+  const { page, tabId } = await env.openTab('news.test');
+  await matchedAtLeast(tabId, 4);
+  const popup = await env.ctx.newPage();
+  await popup.addInitScript(asPrivateWindow);
+  await popup.addInitScript(([id, url]) => {
+    chrome.tabs.query = async () => [{ id, url, incognito: true }];
+    window.close = () => {};
+  }, [tabId, `http://news.test:${site.port}/`]);
+  await popup.goto(env.ext('popup/popup.html'));
+  await waitFor(() => popup.isVisible('#incognito-note'), { message: 'the private window note' });
+  assert.equal(await popup.evaluate(() => document.body.classList.contains('incognito')), true);
+  assert.match(await popup.textContent('#incognito-note'), /^(Incognito|InPrivate|Private|Private browsing) window\. Settings are read-only here for now/);
+  assert.equal(await popup.isDisabled('[data-level=basic]'), true);
+  assert.equal(await popup.isDisabled('#enabled'), true);
+  assert.equal(await popup.isVisible('#fix'), false);
+  assert.equal(await popup.isDisabled('#open-log'), false, 'links to other pages still work');
+  await popup.close();
+  await page.close();
+});
+
+test('private window browsing leaves no site names on disk, and its log entries go when it closes', async () => {
+  const stub = await env.helper.evaluate(async () => {
+    chrome.tabs.get = async () => ({ incognito: true });
+    const activity = await import(chrome.runtime.getURL('lib/activity.js'));
+    // Rule 1 of the Advertising ruleset, as a request from a private tab.
+    await activity.recordMatch({ ruleId: 1, rulesetId: 'advertising' }, { url: 'http://tracker.test/t.gif', initiator: 'http://private-site.test', type: 'image', tabId: 4242 });
+    return true;
+  });
+  assert.ok(stub);
+  const entry = await waitFor(async () => (await env.log()).find((e) => e.site === 'private-site.test'), { message: 'the log entry' });
+  assert.equal(entry.incognito, true, 'tagged as private');
+  const seen = await env.sw.evaluate(async () => (await chrome.storage.local.get('seen')).seen ?? {});
+  assert.ok(!JSON.stringify(seen).includes('private-site.test'), 'no site name in what\'s kept on disk');
+  assert.ok(Object.keys(seen).length > 0, 'the company is still counted');
+  // Shown only in private windows, and forgotten when the last one closes.
+  const normal = await env.ctx.newPage();
+  await normal.goto(env.ext('options/log.html?q=private-site.test'));
+  await waitFor(async () => (await normal.textContent('#empty')).length > 0, { message: 'the log page' });
+  assert.equal(await normal.locator('#entries tr').count(), 0, 'not shown in a normal window');
+  await normal.close();
+  await env.helper.evaluate(async () => (await import(chrome.runtime.getURL('lib/activity.js'))).forgetPrivateEntries());
+  assert.equal((await env.log()).some((e) => e.incognito), false, 'forgotten');
+});
+
+test('settings say when the extension is switched off in private windows', async () => {
+  const page = await env.ctx.newPage();
+  await page.addInitScript(() => {
+    chrome.extension.isAllowedIncognitoAccess = async () => false;
+  });
+  await page.goto(env.ext('options/options.html'));
+  await waitFor(() => page.isVisible('#incognito-off'), { message: 'the notice' });
+  assert.match(await page.textContent('#incognito-off h2'), /^Not switched on in (Incognito|InPrivate|Private|Private browsing) windows$/);
+  await page.close();
+});
+
 test('the extension cannot reach the network', async () => {
   const page = await env.ctx.newPage();
   page.on('console', () => {}); // the refusals are logged as errors; that's expected
