@@ -2,7 +2,7 @@ import { browser, showBrowserText } from '../lib/browser.js';
 import { breakageList, breakageRow, categoryLabel, pageGroups } from '../lib/breakage.js';
 import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
 import { isDue, readGuard } from '../lib/guard.js';
-import { initIncognito } from '../lib/incognito.js';
+import { initIncognito, openSettings } from '../lib/incognito.js';
 import { LEVELS, getEngaged, getSettings, setEnabled, setSiteAllow, setSiteLevel, siteCategoryOverrides, siteKey, siteLevel } from '../lib/core.js';
 
 const $ = (id) => document.getElementById(id);
@@ -206,14 +206,14 @@ $('enabled').addEventListener('change', async (e) => {
 $('open-trackers').addEventListener('click', () => openTrackers());
 $('open-log').addEventListener('click', () => openPage('options/log.html', { q: site }));
 
-$('open-options').addEventListener('click', () => {
-  chrome.runtime.openOptionsPage();
+$('open-options').addEventListener('click', async () => {
+  await openSettings();
   window.close();
 });
 
 showBrowserText();
 render();
-// In a private window nothing here may change a setting (see lib/incognito.js).
-if (await initIncognito()) $('fix').hidden = true;
+// Private windows are tinted and say so (see lib/incognito.js).
+await initIncognito();
 renderBanners();
 if (site) renderPage();

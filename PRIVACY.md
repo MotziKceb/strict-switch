@@ -1,6 +1,6 @@
 # Strict Switch privacy policy
 
-*Last updated: 14 October 2026. Applies to Strict Switch 0.9 and later.*
+*Last updated: 20 October 2026. Applies to Strict Switch 0.9 and later; the private window settings described below are from 0.9.1.*
 
 **The short version:** Strict Switch collects nothing and sends nothing. It has no servers, no analytics and no accounts. Everything it knows stays in your browser, and you can see and delete it.
 
@@ -26,6 +26,8 @@ All of this is stored by your browser, for this extension only.
 | **Companies you visit regularly:** a list of company names (like "Google" or "Meta") | Local storage | Balanced mode opens up categories for these | Recounted every hour |
 | **Caught trackers:** for each tracking company seen, how many requests were blocked or allowed, when it was last seen, and up to 10 site domains where it was seen recently | Local storage | The Trackers page | Until you click **Clear caught list** on the Trackers page or remove the extension |
 | **Activity log:** the last 3,000 tracker requests (time, site domain, tracker address *without* its query string, company, category, what happened and why), your settings changes, and cookie banners handled or checked (site domain, banner platform, the labels of the buttons clicked, and what the site's consent record said) | Session storage (memory only) | The activity log and reports | **Deleted automatically when the browser closes**, or when you click **Clear log** |
+| **Private window settings:** how private windows start (from Strict, or from your normal settings) and the sites (by domain name) you switched "Use these settings in private windows" on for | Browser **sync** storage | So private windows start the way you chose | Until you change them or remove the extension |
+| **Settings changed in a private window:** the levels, exceptions and so on you set there | Session storage (memory only), in the private window's own copy of the extension | So you can change things in a private window | **Deleted when the last private window closes** |
 | **Cookie banner settings:** who handles banners, and the sites (by domain name) where auto-reject is off | Browser **sync** storage | So your choices apply everywhere | Until you change them or remove the extension |
 | **Cookie banner access dates:** when you allowed reading sites, when that access ends, and when the next reminder is due | The extension's own database (IndexedDB), which web pages can't reach | The permission lease and reminder | Until access ends or you switch it off |
 
@@ -61,6 +63,10 @@ Cookie banner handling is off by default. Switching it on asks your browser for 
 While it's on, the scripts look at each page for a cookie banner and read what the site's consent record says. For some banners they also check the cookie the banner sets to remember your choice, to confirm the rejection stuck. They don't read what you type. The only thing kept is the activity log entry described above, and nothing is sent anywhere.
 
 Without cookie banner handling, Strict Switch **can't** read or change the content of web pages or read cookies. It never sees what you type or changes your browser's own settings. Where a browser setting matters (like Do Not Track), the extension only explains it and opens the settings page for you.
+
+### Private windows
+
+Settings you change in a private window are never saved to your normal settings or to sync, and are forgotten when the last private window closes. The one exception is a button you click yourself, **Keep these settings in normal browsing**: it saves that one site's settings (including the site's domain name) to your normal settings, and so to sync if it's on. It asks first and says so. Sites you visit in a private window are not added to the Trackers page, and cookie banner handling is off there.
 
 ## Reports
 

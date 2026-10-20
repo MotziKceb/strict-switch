@@ -8,14 +8,14 @@
 import { CATEGORY_HINTS, breakageList, categoryLabel, pageGroups } from '../lib/breakage.js';
 import { browser } from '../lib/browser.js';
 import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
-import { getSettings, setSiteAllow, setSiteLevel, siteLevel } from '../lib/core.js';
+import { getSettings, privateSiteChanged, setSiteAllow, setSiteLevel, siteLevel } from '../lib/core.js';
 import { ALLOW_MEANS, CATEGORY_DETAILS } from '../lib/explain.js';
-import { initIncognito } from '../lib/incognito.js';
+import { initIncognito, keepSiteInNormal } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
 
-// In a private window nothing here may change a setting (see lib/incognito.js).
-await initIncognito();
+// Private windows are tinted and say so (see lib/incognito.js).
+const privateWindow = await initIncognito();
 const params = new URLSearchParams(location.search);
 const site = params.get('site');
 const tabId = params.has('tab') ? Number(params.get('tab')) : null;
@@ -178,9 +178,16 @@ $('skip').addEventListener('click', () => {
   renderStep();
 });
 
-$('yes').addEventListener('click', () => {
+$('yes').addEventListener('click', async () => {
   $('fixed-text').textContent = steps[index].fixed;
+  $('kept').hidden = true;
+  // In a private window the fix is forgotten when it closes, unless kept.
+  $('keep-normal-box').hidden = !(privateWindow && (await privateSiteChanged(site)));
   show('fixed');
+});
+
+$('keep-normal').addEventListener('click', async () => {
+  if (await keepSiteInNormal(site)) $('kept').hidden = false;
 });
 
 $('no').addEventListener('click', async () => {

@@ -10,12 +10,13 @@ import {
   REMIND_DAYS, SNOOZE_CHOICES, clearGuard, isDue, isExpired, keep, readGuard, snooze, startLease,
 } from '../lib/guard.js';
 import { REPO_URL } from '../lib/project.js';
+import { settingsChanged } from '../lib/core.js';
 import { initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
 
 // In a private window nothing here may change a setting (see lib/incognito.js).
-await initIncognito();
+await initIncognito({ lock: true, note: 'Cookie banner handling isn\'t available in private windows yet. Change it in a normal window.' });
 const dateText = (t) => new Date(t).toLocaleDateString(undefined, { dateStyle: 'long' });
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -143,7 +144,7 @@ async function renderInstall() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && Object.keys(changes).some((k) => k.startsWith('banner'))) render();
+  if (settingsChanged(changes, area) && Object.keys(changes).some((k) => k.startsWith('banner'))) render();
 });
 chrome.permissions.onAdded.addListener(render);
 chrome.permissions.onRemoved.addListener(render);

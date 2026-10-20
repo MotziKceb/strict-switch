@@ -6,14 +6,14 @@ import { CATEGORY_HINTS, breakageRow, fullList, pageGroups } from '../lib/breaka
 import { browser } from '../lib/browser.js';
 import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
 import {
-  CATEGORIES, LEVELS, clearSiteAllows, getSettings, setSiteAllow, setSiteCategory, setSiteLevel, siteCategoryOverrides, siteLevel,
+  CATEGORIES, LEVELS, clearSiteAllows, getPrivateOptions, getSettings, privateSiteChanged, setPrivateFollowSite, setSiteAllow, setSiteCategory, setSiteLevel, siteCategoryOverrides, siteLevel,
 } from '../lib/core.js';
-import { initIncognito } from '../lib/incognito.js';
+import { initIncognito, keepSiteInNormal } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
 
-// In a private window nothing here may change a setting (see lib/incognito.js).
-await initIncognito();
+// Private windows are tinted and say so (see lib/incognito.js).
+const privateWindow = await initIncognito();
 const params = new URLSearchParams(location.search);
 const site = params.get('site');
 const tabId = params.has('tab') ? Number(params.get('tab')) : null;
@@ -117,6 +117,36 @@ function renderExceptions() {
   $('clear').hidden = !pairs.length;
 }
 
+// Normal windows choose what private windows start with; private windows can
+// keep this site's settings in normal browsing.
+async function renderPrivate() {
+  $('private-site-section').hidden = privateWindow;
+  $('keep-section').hidden = true;
+  if (privateWindow) {
+    $('keep-section').hidden = !(await privateSiteChanged(site));
+    return;
+  }
+  const { start, followSites } = await getPrivateOptions();
+  $('private-follow').checked = start === 'normal' || followSites.includes(site);
+  $('private-follow').disabled = start === 'normal';
+  $('private-follow-note').textContent = start === 'normal'
+    ? 'Private windows start from all your normal settings (see Private windows in Settings), so this is already on. '
+    : followSites.includes(site)
+      ? 'On: private windows start with this site\'s settings as they are when the window opens. '
+      : 'Off: this site starts on Strict in private windows. On: private windows start with its settings as they are when the window opens. ';
+}
+
+$('private-follow').addEventListener('change', async (e) => {
+  await setPrivateFollowSite(site, e.target.checked);
+  renderPrivate();
+});
+
+$('keep').addEventListener('click', async () => {
+  if (await keepSiteInNormal(site)) {
+    $('kept').hidden = false;
+  }
+});
+
 $('fix-link').href = `fix.html?site=${encodeURIComponent(site)}${tabId !== null ? `&tab=${tabId}` : ''}`;
 
 async function renderBanners() {
@@ -158,6 +188,7 @@ async function render() {
   renderCategories(level);
   renderExceptions();
   renderBanners();
+  renderPrivate();
   await renderPage();
 }
 

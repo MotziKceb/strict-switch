@@ -25,7 +25,13 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 
 ### Private windows
 
-In a private window (InPrivate in Edge, Incognito in Chrome, Private in Brave, Opera and Vivaldi) the popup and settings pages are tinted and say so. For now settings are read-only there, so nothing from private browsing is saved or synced, and sites visited privately are kept out of the Trackers page. The activity log shows private entries only in private windows and forgets them when the last one closes. Browsers only run extensions in private windows if you allow it for each extension; the settings page tells you if you haven't.
+A private window (InPrivate in Edge, Incognito in Chrome, Private in Brave, Opera and Vivaldi) gets its own copy of Strict Switch. By default every site starts on Strict there, whatever you've set in normal windows, and you can change anything: the changes live in memory only, never reach your normal settings or sync, and are forgotten when the last private window closes. The popup and settings pages are tinted and say so.
+
+- **Start from your normal settings instead:** Settings, **Private windows**. The copy is taken when the first private window opens.
+- **Use these settings in private windows:** a switch on a site's Site settings page (in a normal window). That site starts with its normal settings, even when everything else starts on Strict.
+- **Keep in normal browsing:** found a fix in a private window and want it every day? In Site settings, or on the guide's "Fixed" screen, **Keep these settings in normal browsing** saves that site's settings to your normal ones. It asks first, because it records the site in your normal settings (and in browser sync, if it's on). Nothing else from the private window is saved.
+
+Cookie banner handling isn't available in private windows yet. Browsers only run extensions in private windows if you allow it for each extension; the settings page tells you if you haven't. The settings page also has a "Details for testing private windows" box that shows what each copy is doing.
 
 ### Might break the page
 
@@ -76,8 +82,9 @@ Strict Switch works in any Chromium-based browser: Edge, Chrome, Brave, Opera, V
 | Edge | Tracking prevention (set it to Basic) | Edge's Basic protection |
 | Brave | Shields | Shields only |
 | Opera | Built-in ad and tracker blocker, if on | Opera's blocker only |
+| Vivaldi | Its own tracker and ad blocker (Settings, Privacy); third-party cookies are allowed by default | Vivaldi's blocker only, if it's on |
 | Chrome | None | No tracker blocking |
-| Others (Vivaldi...) | Varies; Vivaldi has its own blocker | Your browser's own protection, if any |
+| Others | Varies | Your browser's own protection, if any |
 
 ## No network access
 
