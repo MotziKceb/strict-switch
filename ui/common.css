@@ -115,7 +115,7 @@ button {
   color: var(--muted);
 }
 
-/* Private windows (see lib/incognito.js): a darker tint and a faint watermark. */
+/* Private windows (see lib/incognito.js): a darker tint. */
 body.incognito {
   --bg: #1c1930;
   --surface: #2a2644;
@@ -125,21 +125,6 @@ body.incognito {
   --accent: #b4a3f0;
   --accent-text: #16112b;
   color-scheme: dark;
-}
-
-body.incognito::before {
-  content: attr(data-incognito);
-  position: fixed;
-  right: 6px;
-  bottom: 56px;
-  z-index: -1;
-  font-size: min(46px, 8.5vw);
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  opacity: 0.09;
-  transform: rotate(-10deg);
-  pointer-events: none;
-  white-space: nowrap;
 }
 
 .incognito-note {
