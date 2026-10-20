@@ -37,6 +37,12 @@ These hold for every feature on this list.
 - [ ] A handful of testers across Edge, Chrome and Brave, for two weeks, reporting through the issue forms.
 - [ ] Watch for: sites that only work on Basic, confusing wording, Lockdown and retry storms, performance on heavy sites.
 
+## Planned small changes
+
+- [ ] **Setting: block link pings and beacons.** Hyperlink auditing (`<a ping="...">`) tells a site's own servers or third parties when you click a link, and Chromium browsers have no switch for it that we know of. Pings to companies on the tracker list are already blocked on Strict (tested in Chromium 141); pings to unlisted addresses and a site pinging itself are not. A separate opt-in setting would block every ping. The setting must say that the browser files `sendBeacon` under the same request type, so beacons sites use for legitimate things (like saving state when you leave a page) are blocked too. Off by default; blocked pings show in the log as "ping" requests.
+- [ ] **Detect Vivaldi.** Vivaldi reports itself as Chrome to web pages, but its brand list in the extension's own pages includes "Vivaldi" (seen in Vivaldi 8.1). Add a Vivaldi profile (it has its own tracker blocker) and hedge the Chrome wording ("If you use Chrome itself...").
+- [ ] **Private windows with their own settings:** Strict for every site by default, per-site "use these settings in private windows", changes stay in the private window. See HANDOFF.md.
+
 ## Store readiness (Chrome Web Store, Edge Add-ons)
 
 - [x] **Privacy policy** (`PRIVACY.md`): collects nothing, sends nothing; what is stored, where and why, including what browser sync copies. The no-network manifest is the proof.

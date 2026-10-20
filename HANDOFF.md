@@ -139,7 +139,8 @@ Upstream package note: the npm package `@duckduckgo/autoconsent` ships its own C
 - 2026-10-14: snooze choices 7/14/30/60 days instead of every day 1-60 (maintainer).
 - 2026-10-14: vendor-only TCF consent is its own verdict, not "Site records consent".
 - 2026-10-14: objecting to legitimate interest by default PARKED (needs per-platform upkeep; maintainer wants to avoid list maintenance). Recorded in ROADMAP "Ideas parked for later". Only Google Funding Choices' autoconsent rule unticks LI.
-- 2026-10-20: lease length 90 days confirmed. PR #3 ready for review.
+- 2026-10-20: lease length 90 days confirmed.
+- 2026-10-20: maintainer wants "block all link pings and beacons" as its own opt-in setting (not built yet; ROADMAP "Planned small changes"). Vivaldi detection via brand "Vivaldi" in extension pages (web pages see "Google Chrome"; even Vivaldi's own "report as" setting only affects pages, not extension pages): add a profile in lib/browser.js, hedge Chrome wording. Not built yet. PR #3 ready for review.
 - 2026-10-20: "Page seems broken?" guide added (maintainer request): short layman wording, one change at a time, explain the trade-off in one line, details behind "More about".
 - Implemented without explicit confirmation (raised in PR #3, maintainer silent so far): cosmetic (hide-only) rules off; settings and reminder on one page; checksums not claimed.
 
