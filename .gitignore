@@ -3,3 +3,6 @@ _metadata/
 
 # Development dependencies
 node_modules/
+
+# Test builds
+*.zip

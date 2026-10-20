@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strict Switch cookie banners</title>
+  <link rel="stylesheet" href="../ui/common.css">
+  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="trackers.css">
+  <link rel="stylesheet" href="banners.css">
+</head>
+<body>
+  <main>
+    <nav class="crumbs"><a class="back" href="options.html">Settings</a><a href="log.html">Activity log</a></nav>
+    <h1>Cookie banners</h1>
+    <p class="muted">Strict Switch can click "reject" on cookie banners for you, then check whether the site recorded your rejection. It's off until you switch it on, because it needs permission to read every site you visit.</p>
+
+    <section class="access" id="access">
+      <div id="access-off" hidden>
+        <h2>Off</h2>
+        <p>Switching this on asks your browser to let Strict Switch <strong>"read and change all your data on all websites"</strong>. That's what finding and answering cookie banners takes. It all happens on your computer; nothing is sent anywhere.</p>
+        <p>Access is handed back by itself after 90 days unless you renew it, and you'll be reminded every 7 days that it's on.</p>
+        <button type="button" class="button" id="turn-on">Switch on</button>
+        <p class="error" id="turn-on-error" hidden></p>
+      </div>
+
+      <div id="access-on" hidden>
+        <h2 id="access-title">On</h2>
+        <p id="access-text"></p>
+        <p class="muted" id="access-dates"></p>
+        <div class="reminder-actions">
+          <button type="button" class="button" id="keep">Keep</button>
+          <button type="button" class="remove" id="turn-off">Turn it off now</button>
+          <span class="snooze">
+            <label for="snooze-days">Remind me in</label>
+            <select id="snooze-days"></select>
+            <button type="button" class="remove" id="snooze">Remind me</button>
+          </span>
+        </div>
+        <p class="notice" id="saved" hidden></p>
+      </div>
+
+      <p class="apology muted">Sorry about the odd spot for this. Your reminder and the date access ends are kept on this page, apart from the rest of Strict Switch's settings, so nothing running inside web pages can quietly postpone them.</p>
+      <details class="tip" id="why">
+        <summary>Why is this stored here?</summary>
+        <p><strong>How auto-reject works.</strong> While it's on, Strict Switch adds a small script to every page you open. The script looks for a cookie banner. If it recognises one, using DuckDuckGo's open-source autoconsent rules (bundled with Strict Switch, never downloaded), it clicks the option to reject. It never clicks "accept". Strict Switch then reads the site's consent record (IAB TCF and Google Consent Mode, which most banners use) to check that the rejection registered, and writes what happened in the activity log.</p>
+        <p><strong>Why page scripts are kept away from this setting.</strong> Scripts that run inside web pages can reach most of an extension's stored settings, and a misbehaving page could try to use them. So your reminder and the date access ends are kept in a separate store that only Strict Switch's own pages can reach, and they only change when you click a button on this page. They're stored as dates. Anything Strict Switch can't read, or anything further away than allowed (60 days for the reminder, 90 days for access), counts as "now". So interference can only make the reminder come sooner, or access end sooner, never later.</p>
+        <p><strong>If reminders keep coming sooner than you chose,</strong> something may be interfering with Strict Switch, such as another extension or software on your computer. Check where your copy came from (below), and consider turning access off.</p>
+      </details>
+    </section>
+
+    <section>
+      <h2>Cookie banners are handled by</h2>
+      <p class="muted">Two tools clicking the same banner can get in each other's way, so pick one. Strict Switch checks the consent record afterwards whichever you choose.</p>
+      <ul class="categories handlers" id="handlers" role="radiogroup" aria-label="Cookie banners are handled by"></ul>
+    </section>
+
+    <section>
+      <h2>Sites where auto-reject is off</h2>
+      <p class="muted">For the rare site where auto-reject gets in the way. Switch it off for a site from the popup or the site's settings. Strict Switch still checks the consent record there.</p>
+      <ul class="sites" id="sites-off"></ul>
+      <p class="muted" id="sites-off-empty">None.</p>
+    </section>
+
+    <section>
+      <h2>Where this copy came from</h2>
+      <p id="install"></p>
+      <p class="muted">Genuine copies of Strict Switch only come from:</p>
+      <ul class="sources">
+        <li>The Chrome Web Store <span class="muted">(not listed yet)</span></li>
+        <li>Microsoft Edge Add-ons <span class="muted">(not listed yet)</span></li>
+        <li>GitHub releases from <a href="#" id="releases">github.com/MotziKceb/strict-switch</a></li>
+      </ul>
+      <p class="muted">Anything else, like a download from another site or a copy someone sent you, is a red flag.</p>
+    </section>
+  </main>
+  <script type="module" src="banners.js"></script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { EXT } from './helpers.js';
 import { CATEGORIES } from '../lib/core.js';
@@ -12,13 +12,48 @@ const manifest = read('manifest.json');
 const DOMAIN = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9-]{2,63}$/;
 
 test('the extension asks for exactly these permissions and no site access', () => {
-  // Changing this list is a decision to make deliberately, not by accident.
+  // Changing these lists is a decision to make deliberately, not by accident.
   assert.deepEqual([...manifest.permissions].sort(), [
     'activeTab', 'alarms', 'declarativeNetRequest', 'declarativeNetRequestFeedback', 'history', 'storage',
   ]);
-  assert.equal(manifest.host_permissions, undefined);
-  assert.equal(manifest.optional_host_permissions, undefined);
+  assert.equal(manifest.host_permissions, undefined, 'no site access at install');
+  assert.equal(manifest.content_scripts, undefined, 'static content scripts would grant site access at install');
+  // Cookie banners: asked for only when the user switches the feature on,
+  // and handed back when it's switched off or the lease ends.
+  assert.deepEqual([...manifest.optional_permissions].sort(), ['notifications', 'scripting']);
+  assert.deepEqual([...manifest.optional_host_permissions].sort(), ['http://*/*', 'https://*/*']);
   assert.equal(manifest.externally_connectable, undefined, 'no messaging channel for other extensions or sites');
+  assert.equal(manifest.web_accessible_resources, undefined, 'web pages can\'t load the extension\'s files');
+});
+
+test('what the cookie banner feature asks for matches the manifest', async () => {
+  const banners = readFileSync(path.join(EXT, 'lib/banners.js'), 'utf8');
+  assert.match(banners, /ORIGINS = \['http:\/\/\*\/\*', 'https:\/\/\*\/\*'\]/);
+  assert.match(banners, /OPTIONAL_PERMISSIONS = \['notifications', 'scripting'\]/);
+});
+
+// Content scripts run in web pages, where the manifest's network lock doesn't
+// apply, so they must not use the network themselves. Neither may the code
+// run in pages' main world.
+test('code that runs in web pages has no way to reach the network', () => {
+  const files = [
+    ...readdirSync(path.join(EXT, 'content')).map((f) => `content/${f}`),
+    'vendor/autoconsent/autoconsent.js',
+    'lib/consent-record.js',
+  ];
+  const network = /\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts|RTCPeerConnection|new\s+Image\b|\.src\s*=|window\.open\s*\(|location\.(href|assign|replace)\s*=|\bimport\s*\(/;
+  for (const file of files) {
+    const code = readFileSync(path.join(EXT, file), 'utf8');
+    assert.doesNotMatch(code, network, `${file} uses a network API`);
+  }
+});
+
+test('the release package includes everything the extension loads', () => {
+  const release = readFileSync(path.join(EXT, '.github/workflows/release.yml'), 'utf8');
+  const zip = release.match(/zip -r "[^"]+" (.+)/)[1].split(/\s+/);
+  for (const needed of ['manifest.json', 'background.js', 'lib', 'popup', 'options', 'ui', 'rules', 'icons', 'content', 'vendor', 'LICENSE']) {
+    assert.ok(zip.includes(needed), `${needed} is packaged`);
+  }
 });
 
 test('the extension cannot reach the network', () => {

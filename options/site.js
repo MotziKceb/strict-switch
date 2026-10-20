@@ -4,11 +4,16 @@
 
 import { CATEGORY_HINTS, breakageRow, fullList, pageGroups } from '../lib/breakage.js';
 import { browser } from '../lib/browser.js';
+import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
 import {
   CATEGORIES, LEVELS, clearSiteAllows, getSettings, setSiteAllow, setSiteCategory, setSiteLevel, siteCategoryOverrides, siteLevel,
 } from '../lib/core.js';
+import { initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
+
+// In a private window nothing here may change a setting (see lib/incognito.js).
+await initIncognito();
 const params = new URLSearchParams(location.search);
 const site = params.get('site');
 const tabId = params.has('tab') ? Number(params.get('tab')) : null;
@@ -112,6 +117,29 @@ function renderExceptions() {
   $('clear').hidden = !pairs.length;
 }
 
+$('fix-link').href = `fix.html?site=${encodeURIComponent(site)}${tabId !== null ? `&tab=${tabId}` : ''}`;
+
+async function renderBanners() {
+  const [active, { handler, sitesOff }] = await Promise.all([bannersActive(), getBannerSettings()]);
+  const owner = bannerSiteOff(site, sitesOff);
+  const inherited = owner && owner !== site;
+  $('banner-site').checked = !owner;
+  $('banner-site').disabled = Boolean(inherited) || !active || handler !== 'self';
+  $('banner-note').replaceChildren(
+    !active ? 'Auto-reject is off everywhere. Switch it on under Cookie banners in Settings. '
+      : handler !== 'self' ? 'Cookie banners are handled by someone else (see Cookie banners in Settings), so Strict Switch never clicks them. '
+        : inherited ? `Switched off through ${owner}; change it there. `
+          : owner ? 'Off here: Strict Switch won\'t click banners on this site, but still checks the consent record. '
+            : 'Strict Switch clicks "reject" on this site\'s cookie banner. Switch off if it gets in the way. ',
+    Object.assign(document.createElement('a'), { href: 'banners.html', textContent: 'Cookie banner settings' }),
+  );
+}
+
+$('banner-site').addEventListener('change', async (e) => {
+  await setBannerSite(site, e.target.checked);
+  renderBanners();
+});
+
 async function renderPage() {
   $('page-section').hidden = tabId === null;
   if (tabId === null) return;
@@ -129,6 +157,7 @@ async function render() {
   const level = renderLevel();
   renderCategories(level);
   renderExceptions();
+  renderBanners();
   await renderPage();
 }
 

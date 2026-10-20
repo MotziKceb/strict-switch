@@ -114,3 +114,28 @@ button {
   font-size: 11px;
   color: var(--muted);
 }
+
+/* Private windows (see lib/incognito.js): a darker tint. */
+body.incognito {
+  --bg: #1c1930;
+  --surface: #2a2644;
+  --text: #ece9f7;
+  --muted: #aaa4c6;
+  --border: #403b66;
+  --accent: #b4a3f0;
+  --accent-text: #16112b;
+  color-scheme: dark;
+}
+
+.incognito-note {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+button:disabled,
+input:disabled,
+select:disabled { cursor: default; }

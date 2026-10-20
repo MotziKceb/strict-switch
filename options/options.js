@@ -1,8 +1,14 @@
 import { browser, showBrowserText } from '../lib/browser.js';
 import { ISSUES_URL, PRIVACY_URL } from '../lib/project.js';
+import { HANDLERS, getBannerSettings, hasAccess } from '../lib/banners.js';
+import { isDue, isExpired, readGuard } from '../lib/guard.js';
 import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel } from '../lib/core.js';
+import { extensionDetailsUrl, incognitoAllowed, initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
+
+// In a private window nothing here may change a setting (see lib/incognito.js).
+await initIncognito();
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
 
 let settings = await getSettings();
@@ -151,6 +157,16 @@ async function renderEngaged() {
   }));
 }
 
+async function renderBanners() {
+  const [access, guard, { handler }] = await Promise.all([hasAccess(), readGuard(), getBannerSettings()]);
+  if (!access || isExpired(guard)) {
+    $('banners-status').textContent = 'Off. Strict Switch can click "reject" on cookie banners for you and check that sites record it. That needs permission to read the sites you visit, so it stays off until you switch it on.';
+    return;
+  }
+  const date = new Date(guard.expiresAt).toLocaleDateString(undefined, { dateStyle: 'long' });
+  $('banners-status').textContent = `On. Cookie banners are handled by: ${HANDLERS[handler].label}. Access ends on ${date} unless you renew it.${isDue(guard) ? ' A reminder is waiting for you.' : ''}`;
+}
+
 // Accepts a bare domain or a pasted URL.
 function parseSite(text) {
   const value = text.trim();
@@ -205,6 +221,11 @@ $('report-issue').addEventListener('click', (e) => {
   chrome.tabs.create({ url: ISSUES_URL });
 });
 
+$('open-incognito-allow').addEventListener('click', () => {
+  chrome.tabs.create({ url: extensionDetailsUrl() });
+});
+incognitoAllowed().then((allowed) => ($('incognito-off').hidden = allowed));
+
 $('open-edge-settings').addEventListener('click', () => {
   chrome.tabs.create({ url: browser.settingsUrl });
 });
@@ -215,7 +236,10 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   settings = await getSettings();
   render();
   renderEngaged();
+  renderBanners();
 });
+chrome.permissions.onAdded.addListener(renderBanners);
+chrome.permissions.onRemoved.addListener(renderBanners);
 
 showBrowserText();
 $('version').textContent = `Version ${chrome.runtime.getManifest().version}`;
@@ -225,3 +249,4 @@ $('list-info').textContent = `Blocklist: ${meta.source}, built ${generated}.`;
 
 render();
 renderEngaged();
+renderBanners();

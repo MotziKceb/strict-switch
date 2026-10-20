@@ -1,0 +1,34 @@
+main { max-width: 640px; }
+
+.step,
+.result {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.step-count { margin-bottom: 2px; font-size: 12px; }
+
+.tradeoff {
+  padding: 8px 12px;
+  border-left: 3px solid var(--basic);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.actions strong { flex-basis: 100%; }
+
+#fixed { border-color: var(--strict); }
+#fixed h2 { color: var(--strict); }
+
+.result a,
+.crumbs a { color: var(--accent); }

@@ -47,7 +47,7 @@ jobs:
 
       - name: Package
         if: steps.version.outputs.new == 'true'
-        run: zip -r "strict-switch-${{ steps.version.outputs.tag }}.zip" manifest.json background.js lib popup options ui rules icons LICENSE
+        run: zip -r "strict-switch-${{ steps.version.outputs.tag }}.zip" manifest.json background.js lib popup options ui rules icons content vendor LICENSE
 
       - name: Publish
         if: steps.version.outputs.new == 'true'

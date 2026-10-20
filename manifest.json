@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Strict Switch",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Strict tracker blocking with one-click per-site levels, per-company control and a plain-language activity log.",
   "minimum_chrome_version": "121",
   "permissions": [
@@ -11,6 +11,14 @@
     "activeTab",
     "history",
     "alarms"
+  ],
+  "optional_permissions": [
+    "notifications",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "content_security_policy": {
     "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; connect-src 'self'; base-uri 'none'"

@@ -1,6 +1,8 @@
 import { CATEGORIES, LEVELS, applyRules, getEngaged, getSettings } from './lib/core.js';
 import { companyFor, refreshEngaged } from './lib/engagement.js';
-import { logEvent, recordMatch } from './lib/activity.js';
+import { forgetPrivateEntries, logEvent, recordMatch } from './lib/activity.js';
+import { checkGuard, onContentMessage, watchAccess } from './lib/autoreject.js';
+import { HANDLERS } from './lib/banners.js';
 
 async function refreshAndApply() {
   if (await refreshEngaged()) await applyRules(await getSettings());
@@ -13,6 +15,9 @@ async function init() {
   // Recount hourly so companies you stop visiting drop off.
   await chrome.alarms.create('refresh-engaged', { periodInMinutes: 60 });
   if (!liveMatches) await chrome.alarms.create('collect-matches', { periodInMinutes: 1 });
+  // Cookie banners: hand access back when the lease ends, remind when due.
+  await chrome.alarms.create('banners-guard', { periodInMinutes: 15 });
+  await checkGuard().catch(() => {});
   await refreshEngaged();
   // Enabled rulesets reset to the manifest defaults on update, so reapply.
   await applyRules(await getSettings());
@@ -28,6 +33,20 @@ chrome.runtime.onStartup.addListener(init);
 chrome.alarms.onAlarm.addListener(({ name }) => {
   if (name === 'refresh-engaged') refreshAndApply();
   if (name === 'collect-matches') collectMatches();
+  if (name === 'banners-guard') checkGuard();
+});
+
+// Cookie banners. Only Strict Switch's own content scripts can send these;
+// there's no channel for other extensions or web pages.
+chrome.runtime.onMessage.addListener((message, sender) => {
+  onContentMessage(message, sender);
+});
+watchAccess();
+
+// When the last private window closes, its log entries go too.
+chrome.windows.onRemoved.addListener(async () => {
+  const windows = await chrome.windows.getAll();
+  if (!windows.some((w) => w.incognito)) forgetPrivateEntries();
 });
 
 // Record caught trackers for the Trackers page. The browser reports each match live
@@ -61,7 +80,8 @@ chrome.history.onVisited.addListener(async ({ url }) => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'sync') {
     // Settings changed here or synced from another device.
-    getSettings().then(applyRules);
+    if (Object.keys(changes).some((k) => !k.startsWith('banner'))) getSettings().then(applyRules);
+    if (changes.bannerHandler) checkGuard();
     logSettingsChanges(changes);
   }
   if (area === 'local' && changes.engaged) {
@@ -113,6 +133,15 @@ function logSettingsChanges(changes) {
   }
   if (changes.blockOwnSites) {
     logEvent(`Blocking on owners' own sites turned ${changes.blockOwnSites.newValue ? 'on' : 'off'}`);
+  }
+  if (changes.bannerHandler) {
+    logEvent(`Cookie banners are now handled by: ${HANDLERS[changes.bannerHandler.newValue ?? 'self']?.label ?? 'Strict Switch'}`);
+  }
+  if (changes.bannerSitesOff) {
+    const before = changes.bannerSitesOff.oldValue ?? [];
+    const after = changes.bannerSitesOff.newValue ?? [];
+    for (const site of after.filter((s) => !before.includes(s))) logEvent(`Auto-reject switched off for ${site}`);
+    for (const site of before.filter((s) => !after.includes(s))) logEvent(`Auto-reject switched back on for ${site}`);
   }
   if (changes.enabled) logEvent(`Strict layer turned ${changes.enabled.newValue === false ? 'off' : 'on'}`);
 }

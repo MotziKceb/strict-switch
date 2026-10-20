@@ -66,3 +66,6 @@ main {
   background: var(--surface);
   font-weight: 600;
 }
+
+/* Cookie banner entries carry a longer explanation. */
+.log tr.cookie-banner td.col-result { white-space: normal; min-width: 280px; }

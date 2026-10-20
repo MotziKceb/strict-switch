@@ -19,6 +19,9 @@ before(async () => {
         for (let i = 0; i < 300; i++) new Image().src = 'http://rr1.googlevideo.com:${port}/videoplayback/' + i;
       </script>`;
     }
+    // Cloudflare's human check, its visitor statistics, and a lookalike.
+    if (host === 'cf.test') return requests(['challenges.cloudflare.com', 'static.cloudflareinsights.com'], port);
+    if (host === 'cfstats.test') return requests(['static.cloudflareinsights.com', 'cdn1cloudflare.xyz'], port);
     return requests(TRACKERS, port);
   });
   env = await launch(site);
@@ -48,6 +51,75 @@ test('popup sums up the page and offers fixes for what might break it', async ()
   assert.equal(await popup.isVisible('#site-settings'), true);
   await popup.close();
   await page.close();
+});
+
+test('"Page seems broken?" tries one thing at a time and puts back what didn\'t help', async () => {
+  const { page, tabId } = await env.openTab('news.test');
+  await matchedAtLeast(tabId, 4);
+  const popup = await env.popup(tabId, 'news.test');
+  await popup.evaluate(() => {
+    window.openedUrls = [];
+    chrome.tabs.create = async ({ url }) => window.openedUrls.push(url);
+  });
+  await popup.click('#fix');
+  const [url] = await popup.evaluate(() => window.openedUrls);
+  assert.equal(url, env.ext(`options/fix.html?site=news.test&tab=${tabId}`));
+  await popup.close();
+
+  const guide = await env.ctx.newPage();
+  await guide.goto(url);
+  // Social on a third-party site is the likeliest culprit; ads aren't tried.
+  await waitFor(async () => (await guide.textContent('#step-title')) === 'Allow Meta (Social) on this site', { message: 'first step' });
+  assert.match(await guide.textContent('#step-tradeoff'), /^If it helps: Allowing it lets Meta see that you visited this site/);
+  assert.match(await guide.textContent('#step-count'), /^Step 1 of 3$/, 'Meta, then Balanced, then Basic');
+  await guide.click('#apply');
+  await waitFor(() => guide.isVisible('#ask-actions'), { message: 'the question' });
+  assert.deepEqual((await env.core('getSettings')).siteAllows['news.test'], ['Meta:social']);
+  await guide.click('#no');
+  await waitFor(async () => (await guide.textContent('#step-title')) === 'Set this site to Balanced', { message: 'next step' });
+  assert.equal((await env.core('getSettings')).siteAllows['news.test'], undefined, 'put back');
+  await guide.click('#apply');
+  await waitFor(() => guide.isVisible('#ask-actions'), { message: 'the question' });
+  await guide.click('#yes');
+  await waitFor(() => guide.isVisible('#fixed'), { message: 'fixed' });
+  assert.equal((await env.core('getSettings')).siteLevels['news.test'], 'balanced', 'the fix is kept');
+  const events = await waitFor(async () => {
+    const e = (await env.log()).filter((x) => x.kind === 'event').map((x) => x.text);
+    return e.includes('Site news.test set to Balanced') && e;
+  }, { message: 'logged' });
+  assert.ok(events.includes('Allowed Meta social on news.test'));
+  await guide.close();
+  await page.close();
+});
+
+test('the guide puts a blocked Cloudflare check first, and ignores Cloudflare\'s statistics and lookalikes', async () => {
+  // Tracking content (where the human check lives) is off by default.
+  await env.core('setSiteCategory', 'cf.test', 'content', true);
+  const { page, tabId } = await env.openTab('cf.test');
+  await matchedAtLeast(tabId, 2);
+  const guide = await env.ctx.newPage();
+  await guide.goto(env.ext(`options/fix.html?site=cf.test&tab=${tabId}`));
+  await waitFor(async () => (await guide.textContent('#step-title')) === 'Allow Cloudflare\'s checks on this site', { message: 'Cloudflare first' });
+  assert.match(await guide.textContent('#step-count'), /^Step 1 of 3$/, 'Cloudflare, then Balanced, then Basic: not listed twice');
+  assert.match(await guide.textContent('#step-what'), /Verify you are human/);
+  await guide.click('#apply');
+  await waitFor(() => guide.isVisible('#ask-actions'), { message: 'the question' });
+  assert.deepEqual((await env.core('getSettings')).siteAllows['cf.test'], ['Cloudflare:content']);
+  await guide.click('#yes');
+  await waitFor(() => guide.isVisible('#fixed'), { message: 'fixed' });
+  await guide.close();
+  await page.close();
+
+  // Only the statistics beacon and the lookalike are blocked: no Cloudflare step.
+  await env.core('setSiteCategory', 'cfstats.test', 'content', true);
+  const other = await env.openTab('cfstats.test');
+  await matchedAtLeast(other.tabId, 2);
+  const second = await env.ctx.newPage();
+  await second.goto(env.ext(`options/fix.html?site=cfstats.test&tab=${other.tabId}`));
+  await waitFor(async () => (await second.textContent('#step-title')).length > 0, { message: 'first step' });
+  assert.ok(!(await second.textContent('#step-title')).includes('Cloudflare'), 'statistics and lookalikes are not the human check');
+  await second.close();
+  await other.page.close();
 });
 
 test('Ctrl+click on Strict switches the site to Lockdown', async () => {
@@ -134,6 +206,82 @@ test('wording matches each browser\'s own protection', async () => {
     await waitFor(async () => (await page.textContent('.callout h2')) === title, { message: title });
     await page.close();
   }
+});
+
+test('cookie banner handling is off until switched on, and asks for nothing at install', async () => {
+  const granted = await env.sw.evaluate(() => chrome.permissions.getAll());
+  assert.deepEqual(granted.origins, [], 'no site access');
+  assert.ok(!granted.permissions.includes('scripting') && !granted.permissions.includes('notifications'));
+  assert.deepEqual(await env.sw.evaluate(() => chrome.scripting?.getRegisteredContentScripts() ?? []), []);
+  await waitFor(async () => (await env.helper.textContent('#banners-status')).startsWith('Off.'), { message: 'settings status' });
+  const page = await env.ctx.newPage();
+  await page.goto(env.ext('options/banners.html'));
+  await waitFor(() => page.isVisible('#turn-on'), { message: 'Switch on button' });
+  assert.equal(await page.isVisible('#access-on'), false);
+  assert.match(await page.textContent('#install'), /loaded from a folder in Developer mode/);
+  await page.close();
+});
+
+// Private windows: the browser reports them through the window, which the
+// tests fake (the test browser has no private window with the extension in).
+const asPrivateWindow = () => {
+  chrome.windows.getCurrent = async () => ({ incognito: true });
+};
+
+test('in a private window the popup is tinted, says so and changes nothing', async () => {
+  const { page, tabId } = await env.openTab('news.test');
+  await matchedAtLeast(tabId, 4);
+  const popup = await env.ctx.newPage();
+  await popup.addInitScript(asPrivateWindow);
+  await popup.addInitScript(([id, url]) => {
+    chrome.tabs.query = async () => [{ id, url, incognito: true }];
+    window.close = () => {};
+  }, [tabId, `http://news.test:${site.port}/`]);
+  await popup.goto(env.ext('popup/popup.html'));
+  await waitFor(() => popup.isVisible('#incognito-note'), { message: 'the private window note' });
+  assert.equal(await popup.evaluate(() => document.body.classList.contains('incognito')), true);
+  assert.match(await popup.textContent('#incognito-note'), /^(Incognito|InPrivate|Private|Private browsing) window\. Settings are read-only here for now/);
+  assert.equal(await popup.isDisabled('[data-level=basic]'), true);
+  assert.equal(await popup.isDisabled('#enabled'), true);
+  assert.equal(await popup.isVisible('#fix'), false);
+  assert.equal(await popup.isDisabled('#open-log'), false, 'links to other pages still work');
+  await popup.close();
+  await page.close();
+});
+
+test('private window browsing leaves no site names on disk, and its log entries go when it closes', async () => {
+  const stub = await env.helper.evaluate(async () => {
+    chrome.tabs.get = async () => ({ incognito: true });
+    const activity = await import(chrome.runtime.getURL('lib/activity.js'));
+    // Rule 1 of the Advertising ruleset, as a request from a private tab.
+    await activity.recordMatch({ ruleId: 1, rulesetId: 'advertising' }, { url: 'http://tracker.test/t.gif', initiator: 'http://private-site.test', type: 'image', tabId: 4242 });
+    return true;
+  });
+  assert.ok(stub);
+  const entry = await waitFor(async () => (await env.log()).find((e) => e.site === 'private-site.test'), { message: 'the log entry' });
+  assert.equal(entry.incognito, true, 'tagged as private');
+  const seen = await env.sw.evaluate(async () => (await chrome.storage.local.get('seen')).seen ?? {});
+  assert.ok(!JSON.stringify(seen).includes('private-site.test'), 'no site name in what\'s kept on disk');
+  assert.ok(Object.keys(seen).length > 0, 'the company is still counted');
+  // Shown only in private windows, and forgotten when the last one closes.
+  const normal = await env.ctx.newPage();
+  await normal.goto(env.ext('options/log.html?q=private-site.test'));
+  await waitFor(async () => (await normal.textContent('#empty')).length > 0, { message: 'the log page' });
+  assert.equal(await normal.locator('#entries tr').count(), 0, 'not shown in a normal window');
+  await normal.close();
+  await env.helper.evaluate(async () => (await import(chrome.runtime.getURL('lib/activity.js'))).forgetPrivateEntries());
+  assert.equal((await env.log()).some((e) => e.incognito), false, 'forgotten');
+});
+
+test('settings say when the extension is switched off in private windows', async () => {
+  const page = await env.ctx.newPage();
+  await page.addInitScript(() => {
+    chrome.extension.isAllowedIncognitoAccess = async () => false;
+  });
+  await page.goto(env.ext('options/options.html'));
+  await waitFor(() => page.isVisible('#incognito-off'), { message: 'the notice' });
+  assert.match(await page.textContent('#incognito-off h2'), /^Not switched on in (Incognito|InPrivate|Private|Private browsing) windows$/);
+  await page.close();
 });
 
 test('the extension cannot reach the network', async () => {

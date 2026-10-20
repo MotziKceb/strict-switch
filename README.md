@@ -19,6 +19,14 @@ It started as a way to get Microsoft Edge's **Strict** tracking prevention with 
 
 **Site settings**, next to the site name in the popup, opens one page for everything about that site: its level, its own tracker category switches (for example Advertising off or Tracking content on for just this site, each marked "changed for this site" with a way back to the global setting), the trackers you've allowed there, and what's blocked on the open page. A site's own settings beat global ones and company rules, but not Lockdown or Basic.
 
+### Page seems broken?
+
+**Page seems broken?** in the popup (and in Site settings) opens a step-by-step guide for that site. It tries one change at a time, most likely first: if Cloudflare's content was blocked on the page (where its "Verify you are human" check lives), allowing that comes first; then the other blocked trackers most likely to break the page, then turning off cookie banner auto-reject if it's on, then Balanced, then Basic. After each step it reloads the page and asks whether it works now. Each step says in a line what allowing it means (for example "lets Meta see that you visited this site"), with **More about** for a longer explanation. Anything that didn't help is put back, and every change is in the activity log. If even Basic doesn't help, Strict Switch probably isn't the cause, and the guide says so.
+
+### Private windows
+
+In a private window (InPrivate in Edge, Incognito in Chrome, Private in Brave, Opera and Vivaldi) the popup and settings pages are tinted and say so. For now settings are read-only there, so nothing from private browsing is saved or synced, and sites visited privately are kept out of the Trackers page. The activity log shows private entries only in private windows and forgets them when the last one closes. Browsers only run extensions in private windows if you allow it for each extension; the settings page tells you if you haven't.
+
 ### Might break the page
 
 The popup lists the blocked trackers most likely to break the current page: Tracking content (videos, images, fonts, page code) and trackers on their owner's own site first, then Social (logins, comments, embedded posts). Each is grouped by company and category with a toggle that allows it **on that site only**; flip what you need and click **Reload page to apply**. The popup shows the top four; **and N more** opens a page with the full list in the same order. Per-site exceptions are listed, and can be removed, in settings.
@@ -49,6 +57,16 @@ The activity log (from the popup, the Trackers page or settings) lists every tra
 
 The log keeps the last 3,000 entries, is cleared when Edge closes, and stores addresses without query strings. It's most detailed when the extension is loaded unpacked; otherwise Edge only reports which rule matched, not the address.
 
+### Cookie banners (optional)
+
+Strict Switch can click **reject** on cookie banners for you, then check whether the site recorded your rejection. It's **off by default**: switching it on (Settings, **Cookie banner settings**) asks your browser to let Strict Switch read every site you visit, which is what finding and answering banners takes.
+
+- **Reject, never accept.** Banners are recognised with DuckDuckGo's open-source [autoconsent](https://github.com/duckduckgo/autoconsent) rules, bundled with each release and never downloaded. Strict Switch only ever asks it to reject; it never clicks "accept".
+- **Reject, then verify.** Afterwards it reads the site's consent record (IAB TCF, used by most EU banners, and Google Consent Mode) to see whether the rejection registered. The activity log lists every banner: the platform it was recognised as, what was clicked, and whether the record confirms the rejection, records consent anyway, or can't be checked. It also notes purposes that still claim "legitimate interest", which a rejection doesn't switch off.
+- **Cookie banners are handled by** Strict Switch, another extension (like Consent-O-Matic) or nobody (you click yourself). In the last two, Strict Switch never touches banners but still checks the record after the click.
+- **Per-site off switch** in the popup and in Site settings, for the rare site where auto-reject gets in the way.
+- **The permission expires.** Access is handed back by itself after 90 days unless you click **Keep**, and a reminder every 7 days (snoozable for 7, 14, 30 or 60 days) says it's still on: a notification, a "!" on the toolbar icon and a banner in the popup. The reminder and the end date are kept where web pages can't reach them, and can only be changed by a click on the Cookie banners page. Anything unreadable counts as "now", so interference can only make the reminder come sooner.
+
 ## Browsers
 
 Strict Switch works in any Chromium-based browser: Edge, Chrome, Brave, Opera, Vivaldi and others. It adapts its wording to what your browser blocks by itself, because that's what a site set to **Basic** is left with:
@@ -63,7 +81,7 @@ Strict Switch works in any Chromium-based browser: Edge, Chrome, Brave, Opera, V
 
 ## No network access
 
-The manifest's content security policy stops the extension from contacting any server: its pages and background worker can only load the extension's own files. Everything stays in your browser. Tracker lists are bundled with each release, and reports only leave your browser when you copy or download them yourself.
+The manifest's content security policy stops the extension from contacting any server: its pages and background worker can only load the extension's own files. The scripts it adds to web pages when cookie banner handling is on aren't covered by that policy, so they're written without any network access, and the automated tests check that they stay that way. Everything stays in your browser. Tracker lists and the cookie banner rules are bundled with each release, and reports only leave your browser when you copy or download them yourself.
 
 ## Reporting problems
 
@@ -124,7 +142,8 @@ Unlike Edge, Strict also blocks a company's trackers on its own sites, such as G
 - Basic sites are covered by a dynamic `allowAllRequests` rule, which overrides the block rules for those pages and any frames they embed.
 - Each company gets its own dynamic rules: an `allow` rule limited to Balanced sites if you visit it regularly, or an `allow` or `block` rule everywhere if you've set it to Allow or Block. Companies and their domains come from `rules/entities.json`, built from Disconnect's company list. The background worker recounts visits hourly and whenever you visit a tracker company's site.
 - Caught trackers and the activity log are recorded from the extension's own rule matches: live when the extension is loaded unpacked, otherwise polled every minute. `rules/rule-index.json` maps each static rule back to its company. The list is kept in local storage and never leaves your device.
-- Permissions: `declarativeNetRequest` to block, `declarativeNetRequestFeedback` to see which rules matched (for the Trackers page and popup), `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the periodic recount. The extension can't read page contents.
+- Permissions: `declarativeNetRequest` to block, `declarativeNetRequestFeedback` to see which rules matched (for the Trackers page and popup), `storage` for settings, `activeTab` to see the current site in the popup, `history` to count visits for Balanced, and `alarms` for the periodic recount and the cookie banner reminder. Without cookie banner handling, the extension can't read page contents.
+- Cookie banners: switching the feature on requests the optional permissions `http://*/*` and `https://*/*` (read sites), `scripting` (add the content scripts and read the consent record) and `notifications` (the reminder), and switching it off or the lease ending hands all of them back. `content/autoreject.js` runs DuckDuckGo's autoconsent from `vendor/autoconsent/` in every frame; `content/watch.js` asks the background worker to read the consent record after the page loads and after clicks. The lease and reminder dates are in the extension's own IndexedDB (`lib/guard.js`), which content scripts can't reach.
 
 ## How this was built
 
@@ -134,7 +153,7 @@ What that means in practice:
 
 - **The decisions are human.** Strict by default, no network access, broad permissions only ever opt-in, facts over opinions, and the four principles in [ROADMAP.md](ROADMAP.md) were the maintainer's calls, often overruling the assistant's suggestions.
 - **It was tested in real browsers.** Many fixes came from the maintainer's everyday browsing and activity log reports: Block not applying on a company's own sites, Balanced letting ad trackers through, browser-specific wording, and more.
-- **It's checked automatically.** The test suite (`tests/`) runs real blocking in Chromium at every level, the popup, the log and reports, and pins the extension's exact permissions and its no-network policy. It runs on every change, and a release can't be published if it fails.
+- **It's checked automatically.** The test suite (`tests/`) runs real blocking in Chromium at every level, the popup, the log and reports, cookie banner rejection and verification, and pins the extension's exact permissions and its no-network policy. It runs on every change, and a release can't be published if it fails.
 - **The extension itself contains no AI** and talks to no AI service, or any other server.
 
 Everything is open for review. If you can read JavaScript, a human code review is very welcome: open an issue with what you find.
@@ -148,11 +167,14 @@ For people working on Strict Switch itself, from a checkout of this repository (
 
 - **Load it:** turn on Developer mode on your browser's extensions page, click **Load unpacked** and pick the repository folder. The activity log shows full addresses when loaded this way.
 - **Rebuild the tracker list** from the latest Disconnect data: `node tools/build-rules.mjs`, then reload the extension. Behind a proxy, prefix the command with `NODE_USE_ENV_PROXY=1`. To build from local copies of Disconnect's files: `node tools/build-rules.mjs --services services.json --entities entities.json`.
+- **Update autoconsent:** change the exact version of `@duckduckgo/autoconsent` in `package.json`, run `npm install`, then `node tools/build-autoconsent.mjs` to refresh `vendor/autoconsent/`. Note the version and its changelog in the release notes.
 - **Regenerate the icons:** `python3 tools/make-icons.py` (requires Pillow).
 - **Release:** bump `version` in `manifest.json` and merge to `main`. The Release workflow packages the extension and publishes a GitHub release for any version that hasn't been released yet. (Automated weekly tracker-list releases are planned; see [ROADMAP.md](ROADMAP.md).)
 
 ## License
 
 The extension code is licensed under the GNU GPL v3 (see `LICENSE`).
+
+`vendor/autoconsent/` is DuckDuckGo's [autoconsent](https://github.com/duckduckgo/autoconsent), licensed under the Mozilla Public License 2.0 (see `vendor/autoconsent/LICENSE`). Its files keep that license; `autoconsent.js` is the same code wrapped to run as a content script.
 
 The rulesets in `rules/` are derived from the Disconnect tracking protection list, which is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). That allows personal, non-commercial use. Publishing the extension commercially would need a different list or a license from Disconnect.

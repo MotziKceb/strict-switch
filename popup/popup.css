@@ -225,3 +225,31 @@ footer {
   flex: none;
   font-size: 12px;
 }
+
+/* A cookie banner reminder is due; it stays until answered. */
+.reminder {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--danger);
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.reminder strong { color: var(--danger); }
+.reminder .link { align-self: flex-start; font-weight: 600; }
+
+.popup-incognito-note { margin: 0 16px 10px; }
+
+.banner-site {
+  margin: 10px 2px 0;
+  font-size: 12px;
+}
+
+.fix-link {
+  display: block;
+  margin: 8px 2px 0;
+  font-size: 12px;
+  font-weight: 600;
+}
