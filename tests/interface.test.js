@@ -315,6 +315,75 @@ test('private settings are cleared when the last private window closes', async (
   assert.ok(result.log, 'the log is handled separately');
 });
 
+test('a private session starts on Strict, or from normal settings, plus the sites you chose', async () => {
+  const run = (privateStart) => env.helper.evaluate(async (privateStart) => {
+    await chrome.storage.sync.set({
+      siteLevels: { 'a.test': 'basic', 'b.test': 'balanced' },
+      siteAllows: { 'b.test': ['Meta:social'] },
+      categories: { content: true },
+      bannerHandler: 'other',
+      privateStart,
+      privateFollowSites: ['a.test'],
+    });
+    const core = await import(chrome.runtime.getURL('lib/core.js'));
+    await core.startPrivateSession();
+    return chrome.storage.session.get(null);
+  }, privateStart);
+  const strict = await run('strict');
+  assert.deepEqual(strict.siteLevels, { 'a.test': 'basic' }, 'only the site you chose, everything else Strict');
+  assert.equal(strict.siteAllows, undefined);
+  assert.equal(strict.categories, undefined, 'global settings are not carried over');
+  assert.equal(strict.privateSessionStarted, true);
+  const normal = await run('normal');
+  assert.deepEqual(normal.siteLevels, { 'a.test': 'basic', 'b.test': 'balanced' });
+  assert.deepEqual(normal.siteAllows, { 'b.test': ['Meta:social'] });
+  assert.deepEqual(normal.categories, { content: true });
+  assert.equal(normal.bannerHandler, undefined, 'cookie banner settings stay out of private windows');
+  assert.equal(normal.privateStart, undefined);
+});
+
+test('keeping a private site in normal browsing replaces that site\'s normal settings, and nothing else', async () => {
+  const sync = await env.helper.evaluate(async () => {
+    await chrome.storage.sync.set({ siteLevels: { 'c.test': 'balanced', 'd.test': 'basic', 'e.test': 'lockdown' }, siteAllows: { 'd.test': ['Meta:social'] } });
+    await chrome.storage.session.set({ siteLevels: { 'c.test': 'basic' }, siteAllows: { 'c.test': ['Criteo:advertising'] } });
+    const core = await import(chrome.runtime.getURL('lib/core.js'));
+    const mine = await core.privateSiteSettings('c.test');
+    await core.keepInNormal('c.test'); // set in private: copied over
+    await core.keepInNormal('d.test'); // nothing in private: back to Strict
+    return { mine, sync: await chrome.storage.sync.get(['siteLevels', 'siteAllows']) };
+  });
+  assert.deepEqual(sync.mine, { siteLevels: 'basic', siteAllows: ['Criteo:advertising'] });
+  assert.deepEqual(sync.sync.siteLevels, { 'c.test': 'basic', 'e.test': 'lockdown' }, 'c copied, d reset, e untouched');
+  assert.deepEqual(sync.sync.siteAllows, { 'c.test': ['Criteo:advertising'] });
+});
+
+test('site settings: normal windows choose what private windows start with, private windows can keep a site', async () => {
+  const normal = await env.ctx.newPage();
+  await normal.goto(env.ext('options/site.html?site=news.test'));
+  await waitFor(() => normal.isVisible('#private-follow'), { message: 'the private switch' });
+  assert.equal(await normal.isVisible('#keep-section'), false, 'only private windows can keep');
+  await normal.click('#private-follow', { force: true });
+  await waitFor(async () => (await env.sw.evaluate(() => chrome.storage.sync.get('privateFollowSites'))).privateFollowSites?.includes('news.test'), { message: 'the site to be followed' });
+  await normal.close();
+
+  const privatePage = await env.ctx.newPage();
+  await privatePage.addInitScript(() => {
+    Object.defineProperty(chrome.extension, 'inIncognitoContext', { get: () => true });
+    chrome.windows.getCurrent = async () => ({ incognito: true });
+    window.confirm = () => true;
+  });
+  await privatePage.goto(env.ext('options/site.html?site=news.test'));
+  await waitFor(async () => (await privatePage.textContent('#title')) === 'Settings for news.test', { message: 'site page' });
+  assert.equal(await privatePage.isVisible('#private-site-section'), false, 'normal-window choice, hidden in private');
+  assert.equal(await privatePage.isVisible('#keep-section'), false, 'nothing to keep yet');
+  await privatePage.click('[data-level=basic]');
+  await waitFor(() => privatePage.isVisible('#keep-section'), { message: 'the keep button' });
+  assert.equal((await env.core('getSettings')).siteLevels['news.test'], undefined, 'not saved normally yet');
+  await privatePage.click('#keep');
+  await waitFor(async () => (await env.core('getSettings')).siteLevels['news.test'] === 'basic', { message: 'kept in normal settings' });
+  await privatePage.close();
+});
+
 test('settings say when the extension is switched off in private windows', async () => {
   const page = await env.ctx.newPage();
   await page.addInitScript(() => {

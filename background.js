@@ -1,4 +1,6 @@
-import { CATEGORIES, LEVELS, applyRules, forgetPrivateSettings, getEngaged, getSettings, inPrivateWindow, settingsChanged } from './lib/core.js';
+import {
+  CATEGORIES, LEVELS, applyRules, ensurePrivateSession, forgetPrivateSettings, getEngaged, getSettings, inPrivateWindow, settingsChanged, startPrivateSession,
+} from './lib/core.js';
 import { companyFor, refreshEngaged } from './lib/engagement.js';
 import { forgetPrivateEntries, logEvent, recordMatch } from './lib/activity.js';
 import { checkGuard, onContentMessage, watchAccess } from './lib/autoreject.js';
@@ -24,6 +26,8 @@ async function init() {
     await checkGuard().catch(() => {});
     await refreshEngaged();
   }
+  // A private window's copy starts its session (see startPrivateSession).
+  if (inPrivateWindow()) await ensurePrivateSession();
   // Enabled rulesets reset to the manifest defaults on update, so reapply.
   await applyRules(await getSettings());
 }
@@ -64,7 +68,7 @@ chrome.windows.onRemoved.addListener(async () => {
 chrome.windows.onCreated.addListener(async (window) => {
   if (!window.incognito) return;
   const windows = await chrome.windows.getAll();
-  if (windows.filter((w) => w.incognito).length === 1) forgetPrivateSettings();
+  if (windows.filter((w) => w.incognito).length === 1) await startPrivateSession();
 });
 
 // Record caught trackers for the Trackers page. The browser reports each match live
@@ -99,7 +103,7 @@ chrome.history.onVisited.addListener(async ({ url }) => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (settingsChanged(changes, area)) {
     // Settings changed here or synced from another device.
-    if (Object.keys(changes).some((k) => !k.startsWith('banner'))) getSettings().then(applyRules);
+    if (Object.keys(changes).some((k) => !k.startsWith('banner') && !k.startsWith('private'))) getSettings().then(applyRules);
     if (changes.bannerHandler) checkGuard();
     logSettingsChanges(changes);
   }
@@ -152,6 +156,15 @@ function logSettingsChanges(changes) {
   }
   if (changes.blockOwnSites) {
     logEvent(`Blocking on owners' own sites turned ${changes.blockOwnSites.newValue ? 'on' : 'off'}`);
+  }
+  if (changes.privateStart) {
+    logEvent(`Private windows now start from: ${changes.privateStart.newValue === 'normal' ? 'your normal settings' : 'Strict for every site'}`);
+  }
+  if (changes.privateFollowSites) {
+    const before = changes.privateFollowSites.oldValue ?? [];
+    const after = changes.privateFollowSites.newValue ?? [];
+    for (const site of after.filter((s) => !before.includes(s))) logEvent(`Private windows start with ${site}'s normal settings`);
+    for (const site of before.filter((s) => !after.includes(s))) logEvent(`Private windows start ${site} on Strict again`);
   }
   if (changes.bannerHandler) {
     logEvent(`Cookie banners are now handled by: ${HANDLERS[changes.bannerHandler.newValue ?? 'self']?.label ?? 'Strict Switch'}`);

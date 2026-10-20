@@ -42,6 +42,28 @@
       <p class="muted" id="exceptions-empty">None.</p>
     </section>
 
+    <section id="private-site-section">
+      <h2>Private windows</h2>
+      <ul class="categories">
+        <li>
+          <label class="switch">
+            <input type="checkbox" id="private-follow">
+            <span>
+              <strong>Use these settings in private windows</strong>
+              <span class="muted" id="private-follow-note"></span>
+            </span>
+          </label>
+        </li>
+      </ul>
+    </section>
+
+    <section id="keep-section" hidden>
+      <h2>Keep in normal browsing</h2>
+      <p class="muted">You've changed settings for this site in this private window. If you want them in your normal windows too, keep them. Otherwise they're forgotten when the last private window closes.</p>
+      <button type="button" class="button" id="keep">Keep these settings in normal browsing</button>
+      <p class="notice" id="kept" hidden>Kept. Your normal windows now use these settings for this site.</p>
+    </section>
+
     <section id="banners-section">
       <h2>Cookie banners on this site</h2>
       <ul class="categories">

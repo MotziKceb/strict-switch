@@ -2,13 +2,15 @@ import { browser, showBrowserText } from '../lib/browser.js';
 import { ISSUES_URL, PRIVACY_URL } from '../lib/project.js';
 import { HANDLERS, getBannerSettings, hasAccess } from '../lib/banners.js';
 import { isDue, isExpired, readGuard } from '../lib/guard.js';
-import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getSettings, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel, settingsChanged } from '../lib/core.js';
+import { CATEGORIES, LEVELS, clearSiteAllows, getEngaged, getPrivateOptions, getSettings, setPrivateStart, setBalancedCategory, setBlockOwnSites, setCategory, setCompanyRule, setEnabled, setSiteLevel, siteKey, siteLevel, settingsChanged } from '../lib/core.js';
 import { diagnostics, extensionDetailsUrl, incognitoAllowed, initIncognito } from '../lib/incognito.js';
 
 const $ = (id) => document.getElementById(id);
 
 // Private windows are tinted and say so (see lib/incognito.js).
-await initIncognito();
+const privateWindow = await initIncognito();
+// How private windows start is a normal-window setting.
+if (privateWindow) $('private-section').hidden = true;
 const meta = await fetch('../rules/meta.json').then((r) => r.json());
 
 let settings = await getSettings();
@@ -167,6 +169,32 @@ async function renderBanners() {
   $('banners-status').textContent = `On. Cookie banners are handled by: ${HANDLERS[handler].label}. Access ends on ${date} unless you renew it.${isDue(guard) ? ' A reminder is waiting for you.' : ''}`;
 }
 
+const PRIVATE_STARTS = {
+  strict: { label: 'Strict for every site', description: 'Whatever you\'ve set in normal windows, every site starts on Strict. Safest if you expect more privacy there.' },
+  normal: { label: 'My normal settings', description: 'Starts with a copy of your normal settings, then changes stay in the private window.' },
+};
+
+async function renderPrivate() {
+  const { start } = await getPrivateOptions();
+  $('private-start').replaceChildren(...Object.entries(PRIVATE_STARTS).map(([id, { label, description }]) => {
+    const input = Object.assign(document.createElement('input'), { type: 'radio', name: 'private-start', value: id, checked: start === id });
+    input.addEventListener('change', async () => {
+      await setPrivateStart(id);
+      renderPrivate();
+    });
+    const text = document.createElement('span');
+    text.append(
+      Object.assign(document.createElement('strong'), { textContent: label }),
+      Object.assign(document.createElement('span'), { className: 'muted', textContent: description }),
+    );
+    const labelEl = Object.assign(document.createElement('label'), { className: 'switch' });
+    labelEl.append(input, text);
+    const li = document.createElement('li');
+    li.append(labelEl);
+    return li;
+  }));
+}
+
 // Accepts a bare domain or a pasted URL.
 function parseSite(text) {
   const value = text.trim();
@@ -242,6 +270,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
   render();
   renderEngaged();
   renderBanners();
+  renderPrivate();
 });
 chrome.permissions.onAdded.addListener(renderBanners);
 chrome.permissions.onRemoved.addListener(renderBanners);
@@ -255,3 +284,4 @@ $('list-info').textContent = `Blocklist: ${meta.source}, built ${generated}.`;
 render();
 renderEngaged();
 renderBanners();
+renderPrivate();
