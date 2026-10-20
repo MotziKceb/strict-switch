@@ -303,6 +303,18 @@ test('private window browsing leaves no site names on disk, and its log entries 
   assert.equal((await env.log()).some((e) => e.incognito), false, 'forgotten');
 });
 
+test('private settings are cleared when the last private window closes', async () => {
+  const result = await env.helper.evaluate(async () => {
+    const core = await import(chrome.runtime.getURL('lib/core.js'));
+    await chrome.storage.session.set({ siteLevels: { 'private.test': 'basic' }, bannerSitesOff: ['x.test'], log: [{ kind: 'event', time: 1, text: 'kept' }] });
+    await core.forgetPrivateSettings();
+    return chrome.storage.session.get(null);
+  });
+  assert.equal(result.siteLevels, undefined);
+  assert.equal(result.bannerSitesOff, undefined);
+  assert.ok(result.log, 'the log is handled separately');
+});
+
 test('settings say when the extension is switched off in private windows', async () => {
   const page = await env.ctx.newPage();
   await page.addInitScript(() => {

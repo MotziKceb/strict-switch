@@ -1,4 +1,4 @@
-import { CATEGORIES, LEVELS, applyRules, getEngaged, getSettings, inPrivateWindow, settingsChanged } from './lib/core.js';
+import { CATEGORIES, LEVELS, applyRules, forgetPrivateSettings, getEngaged, getSettings, inPrivateWindow, settingsChanged } from './lib/core.js';
 import { companyFor, refreshEngaged } from './lib/engagement.js';
 import { forgetPrivateEntries, logEvent, recordMatch } from './lib/activity.js';
 import { checkGuard, onContentMessage, watchAccess } from './lib/autoreject.js';
@@ -51,10 +51,20 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 });
 watchAccess();
 
-// When the last private window closes, its log entries go too.
+// When the last private window closes, its log entries and settings go too.
 chrome.windows.onRemoved.addListener(async () => {
   const windows = await chrome.windows.getAll();
-  if (!windows.some((w) => w.incognito)) forgetPrivateEntries();
+  if (!windows.some((w) => w.incognito)) {
+    forgetPrivateEntries();
+    forgetPrivateSettings();
+  }
+});
+// A private window that opens first starts clean, even if the close above
+// was missed.
+chrome.windows.onCreated.addListener(async (window) => {
+  if (!window.incognito) return;
+  const windows = await chrome.windows.getAll();
+  if (windows.filter((w) => w.incognito).length === 1) forgetPrivateSettings();
 });
 
 // Record caught trackers for the Trackers page. The browser reports each match live
