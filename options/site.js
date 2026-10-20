@@ -6,7 +6,7 @@ import { CATEGORY_HINTS, breakageRow, fullList, pageGroups } from '../lib/breaka
 import { browser } from '../lib/browser.js';
 import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
 import {
-  CATEGORIES, LEVELS, clearSiteAllows, getPrivateOptions, getSettings, privateSiteSettings, setPrivateFollowSite, setSiteAllow, setSiteCategory, setSiteLevel, siteCategoryOverrides, siteLevel,
+  CATEGORIES, LEVELS, clearSiteAllows, getPrivateOptions, getSettings, privateSiteChanged, setPrivateFollowSite, setSiteAllow, setSiteCategory, setSiteLevel, siteCategoryOverrides, siteLevel,
 } from '../lib/core.js';
 import { initIncognito, keepSiteInNormal } from '../lib/incognito.js';
 
@@ -123,7 +123,7 @@ async function renderPrivate() {
   $('private-site-section').hidden = privateWindow;
   $('keep-section').hidden = true;
   if (privateWindow) {
-    $('keep-section').hidden = !Object.keys(await privateSiteSettings(site)).length;
+    $('keep-section').hidden = !(await privateSiteChanged(site));
     return;
   }
   const { start, followSites } = await getPrivateOptions();

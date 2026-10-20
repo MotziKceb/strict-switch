@@ -82,8 +82,9 @@ Strict Switch works in any Chromium-based browser: Edge, Chrome, Brave, Opera, V
 | Edge | Tracking prevention (set it to Basic) | Edge's Basic protection |
 | Brave | Shields | Shields only |
 | Opera | Built-in ad and tracker blocker, if on | Opera's blocker only |
+| Vivaldi | Its own tracker and ad blocker (Settings, Privacy); third-party cookies are allowed by default | Vivaldi's blocker only, if it's on |
 | Chrome | None | No tracker blocking |
-| Others (Vivaldi...) | Varies; Vivaldi has its own blocker | Your browser's own protection, if any |
+| Others | Varies | Your browser's own protection, if any |
 
 ## No network access
 

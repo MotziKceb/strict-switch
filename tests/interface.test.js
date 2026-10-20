@@ -197,6 +197,8 @@ test('wording matches each browser\'s own protection', async () => {
     'Set Edge to Basic': () => Object.defineProperty(navigator, 'userAgentData', { get: () => ({ brands: [{ brand: 'Microsoft Edge' }] }) }),
     'Works alongside Brave Shields': () => Object.defineProperty(navigator, 'brave', { get: () => ({}) }),
     'Works alongside Opera\'s blocker': () => Object.defineProperty(navigator, 'userAgentData', { get: () => ({ brands: [{ brand: 'Opera' }] }) }),
+    // Vivaldi is Chrome to web pages, but lists itself in the extension's own pages.
+    'Works alongside Vivaldi\'s blocker': () => Object.defineProperty(navigator, 'userAgentData', { get: () => ({ brands: [{ brand: 'Chromium' }, { brand: 'Vivaldi' }] }) }),
     'No built-in safety net': () => Object.defineProperty(navigator, 'userAgentData', { get: () => ({ brands: [{ brand: 'Google Chrome' }] }) }),
   };
   for (const [title, fake] of Object.entries(fakes)) {
@@ -382,6 +384,29 @@ test('site settings: normal windows choose what private windows start with, priv
   await privatePage.click('#keep');
   await waitFor(async () => (await env.core('getSettings')).siteLevels['news.test'] === 'basic', { message: 'kept in normal settings' });
   await privatePage.close();
+});
+
+test('a site set back to Strict in a private window can still be kept in normal browsing', async () => {
+  await env.helper.evaluate(async () => {
+    await chrome.storage.sync.set({ siteLevels: { 'x.test': 'basic', 'y.test': 'balanced' } });
+    // As if the private window started from a copy of the normal settings.
+    await chrome.storage.session.set({ siteLevels: { 'x.test': 'basic', 'y.test': 'balanced' }, privateSessionStarted: true });
+  });
+  const page = await env.ctx.newPage();
+  await page.addInitScript(() => {
+    Object.defineProperty(chrome.extension, 'inIncognitoContext', { get: () => true });
+    chrome.windows.getCurrent = async () => ({ incognito: true });
+    window.confirm = () => true;
+  });
+  await page.goto(env.ext('options/site.html?site=x.test'));
+  await waitFor(async () => (await page.textContent('#title')) === 'Settings for x.test', { message: 'site page' });
+  assert.equal(await page.isVisible('#keep-section'), false, 'copied but not changed: nothing to keep');
+  await page.click('[data-level=strict]');
+  await waitFor(() => page.isVisible('#keep-section'), { message: 'the keep button, even though Strict leaves no entry' });
+  await page.click('#keep');
+  await waitFor(async () => (await env.core('getSettings')).siteLevels['x.test'] === undefined, { message: 'normal browsing back on Strict' });
+  assert.equal((await env.core('getSettings')).siteLevels['y.test'], 'balanced', 'other sites untouched');
+  await page.close();
 });
 
 test('settings say when the extension is switched off in private windows', async () => {

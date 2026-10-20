@@ -8,7 +8,7 @@
 import { CATEGORY_HINTS, breakageList, categoryLabel, pageGroups } from '../lib/breakage.js';
 import { browser } from '../lib/browser.js';
 import { bannerSiteOff, bannersActive, getBannerSettings, setBannerSite } from '../lib/banners.js';
-import { getSettings, privateSiteSettings, setSiteAllow, setSiteLevel, siteLevel } from '../lib/core.js';
+import { getSettings, privateSiteChanged, setSiteAllow, setSiteLevel, siteLevel } from '../lib/core.js';
 import { ALLOW_MEANS, CATEGORY_DETAILS } from '../lib/explain.js';
 import { initIncognito, keepSiteInNormal } from '../lib/incognito.js';
 
@@ -182,7 +182,7 @@ $('yes').addEventListener('click', async () => {
   $('fixed-text').textContent = steps[index].fixed;
   $('kept').hidden = true;
   // In a private window the fix is forgotten when it closes, unless kept.
-  $('keep-normal-box').hidden = !(privateWindow && Object.keys(await privateSiteSettings(site)).length);
+  $('keep-normal-box').hidden = !(privateWindow && (await privateSiteChanged(site)));
   show('fixed');
 });
 
